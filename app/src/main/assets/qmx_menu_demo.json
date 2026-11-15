@@ -1,0 +1,2403 @@
+{
+ "firmware": "1_04_003",
+ "lists": {
+  "1": [
+   "NO",
+   "YES"
+  ],
+  "2": [
+   "OFF",
+   "ON"
+  ],
+  "3": [
+   "Straight",
+   "IAMBIC A",
+   "IAMBIC B",
+   "Ultimatic"
+  ],
+  "4": [
+   "0.25dB",
+   "0.5dB",
+   "1dB",
+   "2dB",
+   "4dB"
+  ],
+  "5": [
+   "0dB",
+   "20dB",
+   "40dB",
+   "60dB",
+   "80dB",
+   "100dB"
+  ],
+  "6": [
+   "DISABLED",
+   "ENABLED"
+  ],
+  "7": [
+   "OFF",
+   "Auto",
+   "Contest",
+   "Custom dits",
+   "Custom decidits",
+   "Custom ms"
+  ],
+  "8": [
+   "Tip",
+   "Ring",
+   "Both"
+  ],
+  "9": [
+   "None",
+   "USB 1",
+   "USB 2",
+   "USB 3"
+  ],
+  "10": [
+   "SK",
+   "VA"
+  ],
+  "11": [
+   "None",
+   "Scroll line",
+   "Scroll char."
+  ],
+  "12": [
+   "None",
+   "50",
+   "100",
+   "150",
+   "200",
+   "250",
+   "300",
+   "400",
+   "500"
+  ],
+  "13": [
+   "500",
+   "525",
+   "550",
+   "575",
+   "600",
+   "625",
+   "650",
+   "675",
+   "700",
+   "725",
+   "750",
+   "775",
+   "800",
+   "825",
+   "850",
+   "875",
+   "900",
+   "925",
+   "950"
+  ],
+  "14": [
+   "Absolute",
+   "Relative"
+  ],
+  "15": [
+   "LSB",
+   "USB"
+  ],
+  "16": [
+   "2500",
+   "2700",
+   "2900",
+   "3200"
+  ],
+  "17": [
+   "Ext. mic",
+   "USB",
+   "Two-tone",
+   "Auto"
+  ],
+  "18": [
+   "OFF",
+   "Icon",
+   "Voltage"
+  ],
+  "19": [
+   "OFF",
+   "Graphs",
+   "Pwr number",
+   "SWR number"
+  ],
+  "20": [
+   "OFF",
+   "Graph",
+   "Number"
+  ],
+  "21": [
+   ",",
+   "."
+  ],
+  "22": [
+   "None",
+   "Button",
+   "Timer",
+   "TX->RX"
+  ],
+  "23": [
+   "Plain",
+   "Inverse",
+   "Flashing"
+  ],
+  "24": [
+   "OFF",
+   "Warn",
+   "Prevent TX"
+  ],
+  "25": [
+   "ITU Region 2",
+   "Japan",
+   "None"
+  ],
+  "26": [
+   "On demand",
+   "Immediate"
+  ],
+  "27": [
+   "Software",
+   "QMX+ Internal"
+  ],
+  "28": [
+   "Paddle port",
+   "QMX+ Internal"
+  ],
+  "29": [
+   "None",
+   "USB 1",
+   "USB 2",
+   "USB 3",
+   "Serial 1 (AUX)",
+   "Serial 6 (PTT)"
+  ],
+  "30": [
+   "1",
+   "2",
+   "3"
+  ],
+  "31": [
+   "75",
+   "110",
+   "150",
+   "300",
+   "600",
+   "1200",
+   "2400",
+   "4800",
+   "9600",
+   "14400",
+   "19200",
+   "38400",
+   "56000",
+   "115200"
+  ]
+ },
+ "menu": [
+  {
+   "name": "Audio",
+   "type": 0,
+   "children": [
+    {
+     "name": "AGC settings",
+     "type": 0,
+     "children": [
+      {
+       "name": "AGC",
+       "type": 5,
+       "list": 2,
+       "value": "ON",
+       "help": "Enables the whole receive AGC system; AGC only operates in CW mode."
+      },
+      {
+       "name": "Threshold S",
+       "type": 3,
+       "len": 2,
+       "value": "5",
+       "min": 0,
+       "max": 9,
+       "unit": "S",
+       "help": "AGC threshold in S-points; below it no AGC action is applied."
+      },
+      {
+       "name": "Slope dB per dB",
+       "type": 3,
+       "len": 2,
+       "value": "6",
+       "min": 1,
+       "max": 99,
+       "unit": "dB/dB",
+       "help": "Input dB change needed for 1dB output change; higher values give more aggressive AGC."
+      },
+      {
+       "name": "Noise filter",
+       "type": 3,
+       "len": 2,
+       "value": "10",
+       "min": 0,
+       "max": 99,
+       "help": "Duration of the impulse-noise filter in peak-detection periods; short impulses do not start the hang timer."
+      },
+      {
+       "name": "Hang time",
+       "type": 3,
+       "len": 3,
+       "value": "200",
+       "min": 0,
+       "max": 999,
+       "help": "How long the AGC peak attenuation is held, in peak-detection periods, before recovery starts."
+      },
+      {
+       "name": "Smooth samples",
+       "type": 3,
+       "len": 2,
+       "value": "50",
+       "min": 0,
+       "max": 99,
+       "help": "Spreads each AGC gain change over this many 48ksps samples to avoid clicks."
+      },
+      {
+       "name": "Recovery dB/s",
+       "type": 3,
+       "len": 3,
+       "value": "20",
+       "min": 0,
+       "max": 999,
+       "unit": "dB/s",
+       "help": "Rate at which AGC attenuation recovers after the hang time expires."
+      },
+      {
+       "name": "Sample blocks",
+       "type": 3,
+       "len": 1,
+       "value": "2",
+       "min": 1,
+       "max": 9,
+       "help": "Number of 32-sample blocks used for peak detection; 2 is recommended."
+      },
+      {
+       "name": "S9 sounds like S",
+       "type": 3,
+       "len": 1,
+       "value": "9",
+       "min": 0,
+       "max": 9,
+       "unit": "S",
+       "help": "Fixed gain anchor so a signal of this S-level sounds the same with AGC on or off."
+      }
+     ]
+    },
+    {
+     "name": "Volume step",
+     "type": 5,
+     "list": 4,
+     "value": "0.5dB",
+     "help": "Volume change per click of the volume knob."
+    },
+    {
+     "name": "Audio atten.",
+     "type": 5,
+     "list": 5,
+     "value": "0dB",
+     "help": "Extra audio output attenuation, useful with sensitive headphones."
+    },
+    {
+     "name": "Mute at min. vol",
+     "type": 5,
+     "list": 1,
+     "value": "NO",
+     "help": "When YES, audio is fully muted at minimum volume."
+    }
+   ]
+  },
+  {
+   "name": "CW",
+   "type": 0,
+   "children": [
+    {
+     "name": "CW Keyer",
+     "type": 0,
+     "children": [
+      {
+       "name": "Keyer mode",
+       "type": 5,
+       "list": 3,
+       "value": "IAMBIC A",
+       "help": "Keyer operating mode: straight key or paddle (iambic A/B, ultimatic)."
+      },
+      {
+       "name": "Keyer swap",
+       "type": 5,
+       "list": 1,
+       "value": "NO",
+       "help": "Swaps the dit and dah paddle contacts in software."
+      },
+      {
+       "name": "Keyer Weight",
+       "type": 3,
+       "len": 3,
+       "value": "500",
+       "min": 50,
+       "max": 950,
+       "help": "Dit/dah weighting in tenths of a percent; 500 means 50.0% duty cycle."
+      },
+      {
+       "name": "Auto Space",
+       "type": 5,
+       "list": 2,
+       "value": "OFF",
+       "help": "Forces a correct 3-dit gap between characters when the paddle is pressed too early."
+      },
+      {
+       "name": "Semi QSK",
+       "type": 5,
+       "list": 7,
+       "value": "OFF",
+       "help": "Break-in behaviour: OFF is full QSK, otherwise the receive switch-back delay mode."
+      },
+      {
+       "name": "Custom Semi QSK",
+       "type": 3,
+       "len": 3,
+       "value": "8",
+       "min": 1,
+       "max": 999,
+       "help": "Semi-QSK delay used by the custom modes (dits, tenths of dits or ms)."
+      },
+      {
+       "name": "Practice mode",
+       "type": 5,
+       "list": 2,
+       "value": "OFF",
+       "help": "Everything works normally but no RF is transmitted."
+      },
+      {
+       "name": "Straight mode",
+       "type": 5,
+       "list": 8,
+       "value": "Both",
+       "help": "Which key jack contact (tip, ring or both) keys in straight mode."
+      },
+      {
+       "name": "GPS protection",
+       "type": 5,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Auto practice mode when a GPS is detected on the paddle port."
+      },
+      {
+       "name": "Key from USB DTR",
+       "type": 5,
+       "list": 9,
+       "value": "None",
+       "help": "Key CW from the DTR line of the chosen USB virtual COM port."
+      }
+     ]
+    },
+    {
+     "name": "CW Decoder",
+     "type": 0,
+     "children": [
+      {
+       "name": "Noise blnk.",
+       "type": 3,
+       "len": 2,
+       "value": "10",
+       "min": 0,
+       "max": 99,
+       "unit": "ms",
+       "help": "Noise blanker duration; shorter impulses are ignored by the decoder."
+      },
+      {
+       "name": "Speed avg.",
+       "type": 3,
+       "len": 2,
+       "value": "07",
+       "min": 1,
+       "max": 99,
+       "help": "Averaging weight used to track the received keying speed."
+      },
+      {
+       "name": "Ampl. Avg.",
+       "type": 3,
+       "len": 2,
+       "value": "60",
+       "min": 1,
+       "max": 99,
+       "help": "Averaging used for the decoder's tone-detection amplitude threshold."
+      },
+      {
+       "name": "Enable Rx",
+       "type": 5,
+       "list": 1,
+       "value": "YES",
+       "help": "Decode received CW on the display."
+      },
+      {
+       "name": "Enable Tx",
+       "type": 5,
+       "list": 1,
+       "value": "YES",
+       "help": "Decode your own transmitted keying on the display."
+      },
+      {
+       "name": "Enable edit",
+       "type": 5,
+       "list": 1,
+       "value": "YES",
+       "help": "Allow keyed CW to edit number and text menu parameters."
+      },
+      {
+       "name": "Prefer prosigns",
+       "type": 5,
+       "list": 1,
+       "value": "YES",
+       "help": "Resolve ambiguous symbols as prosigns rather than punctuation."
+      },
+      {
+       "name": "SK or VA",
+       "type": 5,
+       "list": 10,
+       "value": "VA",
+       "help": "Show the SK/VA prosign as SK or as VA."
+      },
+      {
+       "name": "Fullscreen mode",
+       "type": 5,
+       "list": 11,
+       "value": "None",
+       "help": "In practice mode, use the whole LCD for decoded CW."
+      }
+     ]
+    },
+    {
+     "name": "CW passband",
+     "type": 5,
+     "list": 12,
+     "value": "300",
+     "help": "CW filter passband in Hz; None disables the CW filter."
+    },
+    {
+     "name": "CW center",
+     "type": 5,
+     "list": 13,
+     "value": "700",
+     "help": "Filter center frequency; available choices depend on the passband."
+    },
+    {
+     "name": "Auto-offset/tone",
+     "type": 5,
+     "list": 1,
+     "value": "YES",
+     "help": "Automatically match CW offset and sidetone to the filter center."
+    },
+    {
+     "name": "CW offset",
+     "type": 3,
+     "len": 3,
+     "value": "700",
+     "min": 600,
+     "max": 800,
+     "unit": "Hz",
+     "help": "CW receive offset frequency."
+    },
+    {
+     "name": "Sidetone freq.",
+     "type": 3,
+     "len": 3,
+     "value": "700",
+     "unit": "Hz",
+     "help": "Sidetone audio frequency (operator convenience only)."
+    },
+    {
+     "name": "Sidetone volume",
+     "type": 3,
+     "len": 2,
+     "value": "70",
+     "help": "Sidetone loudness."
+    },
+    {
+     "name": "Sidetone abs/rel",
+     "type": 5,
+     "list": 14,
+     "value": "Relative",
+     "help": "Whether sidetone level follows the main volume control."
+    },
+    {
+     "name": "CW-R",
+     "type": 5,
+     "list": 2,
+     "value": "OFF",
+     "help": "Receive CW on lower sideband instead of upper."
+    },
+    {
+     "name": "Choose filters",
+     "type": 0,
+     "children": [
+      {
+       "name": "50",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 50Hz passband in the CW passband list."
+      },
+      {
+       "name": "100",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 100Hz passband in the CW passband list."
+      },
+      {
+       "name": "150",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 150Hz passband in the CW passband list."
+      },
+      {
+       "name": "200",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 200Hz passband in the CW passband list."
+      },
+      {
+       "name": "250",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 250Hz passband in the CW passband list."
+      },
+      {
+       "name": "300",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 300Hz passband in the CW passband list."
+      },
+      {
+       "name": "400",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 400Hz passband in the CW passband list."
+      },
+      {
+       "name": "500",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include the 500Hz passband in the CW passband list."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Digi",
+   "type": 0,
+   "children": [
+    {
+     "name": "VOX",
+     "type": 5,
+     "list": 2,
+     "value": "OFF",
+     "help": "Transmit automatically on incoming USB audio instead of CAT TX control."
+    },
+    {
+     "name": "Rise threshold",
+     "type": 3,
+     "len": 2,
+     "value": "80",
+     "min": 0,
+     "max": 99,
+     "unit": "%",
+     "help": "Audio level (% of max) above which the transmitter keys down."
+    },
+    {
+     "name": "Fall threshold",
+     "type": 3,
+     "len": 2,
+     "value": "60",
+     "min": 0,
+     "max": 99,
+     "unit": "%",
+     "help": "Audio level (% of max) below which the transmitter keys up."
+    },
+    {
+     "name": "Minimum cycles",
+     "type": 3,
+     "len": 2,
+     "value": "01",
+     "min": 1,
+     "max": 99,
+     "help": "Minimum audio cycles per frequency measurement."
+    },
+    {
+     "name": "Minimum samples",
+     "type": 3,
+     "len": 3,
+     "value": "480",
+     "min": 1,
+     "max": 999,
+     "help": "Minimum audio samples per frequency measurement (480 = 10ms)."
+    },
+    {
+     "name": "Discard samples",
+     "type": 3,
+     "len": 1,
+     "value": "1",
+     "min": 0,
+     "max": 9,
+     "help": "Zero crossings ignored when audio first appears."
+    },
+    {
+     "name": "TX shift thrshld",
+     "type": 3,
+     "len": 3,
+     "value": "0",
+     "min": 0,
+     "max": 999,
+     "unit": "mHz",
+     "help": "Audio frequency change in milliHz needed before the TX frequency is updated."
+    },
+    {
+     "name": "Sideband",
+     "type": 5,
+     "list": 15,
+     "value": "USB",
+     "help": "Demodulation sideband in Digi mode."
+    }
+   ]
+  },
+  {
+   "name": "SSB",
+   "type": 0,
+   "children": [
+    {
+     "name": "Filter RX",
+     "type": 5,
+     "list": 16,
+     "value": "2700",
+     "help": "SSB receive filter bandwidth in Hz."
+    },
+    {
+     "name": "Filter TX",
+     "type": 5,
+     "list": 16,
+     "value": "2700",
+     "help": "SSB transmit audio filter bandwidth in Hz."
+    },
+    {
+     "name": "Input",
+     "type": 5,
+     "list": 17,
+     "value": "Ext. mic",
+     "help": "Audio source for the SSB exciter."
+    },
+    {
+     "name": "Microphone",
+     "type": 0,
+     "children": [
+      {
+       "name": "Parametric EQ",
+       "type": 0,
+       "children": [
+        {
+         "name": "Use EQ",
+         "type": 5,
+         "list": 1,
+         "value": "YES",
+         "help": "Enable the transmit equalizer."
+        },
+        {
+         "name": "Global gain",
+         "type": 3,
+         "len": 3,
+         "value": "0",
+         "min": -20,
+         "max": 20,
+         "unit": "dB",
+         "help": "Gain applied to the whole EQ curve."
+        },
+        {
+         "name": "Bass Freq.",
+         "type": 3,
+         "len": 4,
+         "value": "300",
+         "unit": "Hz",
+         "help": "Low-shelf mid-point frequency."
+        },
+        {
+         "name": "Bass gain",
+         "type": 3,
+         "len": 3,
+         "value": "0",
+         "min": -20,
+         "max": 20,
+         "unit": "dB",
+         "help": "Total low-shelf gain."
+        },
+        {
+         "name": "Bass Slope",
+         "type": 3,
+         "len": 3,
+         "value": "0.7",
+         "min": 0,
+         "max": 2,
+         "help": "Steepness of the low-shelf slope (0.0 to 2.0)."
+        },
+        {
+         "name": "Treble Freq.",
+         "type": 3,
+         "len": 4,
+         "value": "2000",
+         "unit": "Hz",
+         "help": "High-shelf mid-point frequency."
+        },
+        {
+         "name": "Treble gain",
+         "type": 3,
+         "len": 3,
+         "value": "+7",
+         "min": -20,
+         "max": 20,
+         "unit": "dB",
+         "help": "Total high-shelf gain."
+        },
+        {
+         "name": "Treble Slope",
+         "type": 3,
+         "len": 3,
+         "value": "0.9",
+         "min": 0,
+         "max": 2,
+         "help": "Steepness of the high-shelf slope (0.0 to 2.0)."
+        }
+       ]
+      },
+      {
+       "name": "Mic AGC",
+       "type": 0,
+       "children": [
+        {
+         "name": "AGC ON",
+         "type": 5,
+         "list": 1,
+         "value": "YES",
+         "help": "Enable the slow microphone AGC."
+        },
+        {
+         "name": "Max gain",
+         "type": 3,
+         "len": 2,
+         "value": "10",
+         "min": 0,
+         "max": 99,
+         "unit": "dB",
+         "help": "Maximum microphone AGC gain."
+        },
+        {
+         "name": "Hold time",
+         "type": 3,
+         "len": 2,
+         "value": "10",
+         "min": 0,
+         "max": 99,
+         "unit": "0.1s",
+         "help": "Time the reduced gain is held, in tenths of a second."
+        },
+        {
+         "name": "Recovery",
+         "type": 3,
+         "len": 2,
+         "value": "2",
+         "min": 0,
+         "max": 99,
+         "unit": "dB/s",
+         "help": "Gain recovery rate after the hold time."
+        }
+       ]
+      },
+      {
+       "name": "Gain",
+       "type": 3,
+       "len": 2,
+       "value": "50",
+       "min": 0,
+       "max": 99,
+       "unit": "dB",
+       "help": "Fixed gain applied to the microphone signal."
+      },
+      {
+       "name": "Compression",
+       "type": 3,
+       "len": 2,
+       "value": "0",
+       "min": 0,
+       "max": 99,
+       "unit": "dB",
+       "help": "Speech compression amount; raises quieter speech."
+      },
+      {
+       "name": "Noise cncl.",
+       "type": 5,
+       "list": 2,
+       "value": "ON",
+       "help": "Microphone noise cancellation."
+      },
+      {
+       "name": "Mic. noise gate",
+       "type": 0,
+       "children": [
+        {
+         "name": "Noise gate",
+         "type": 5,
+         "list": 2,
+         "value": "ON",
+         "help": "Enable the microphone noise gate."
+        },
+        {
+         "name": "Threshold",
+         "type": 3,
+         "len": 4,
+         "value": "70",
+         "min": 0,
+         "max": 4095,
+         "help": "Gate threshold in DAC units."
+        },
+        {
+         "name": "Samples",
+         "type": 3,
+         "len": 2,
+         "value": "99",
+         "min": 0,
+         "max": 99,
+         "help": "Hysteresis counter that slows gate operation."
+        },
+        {
+         "name": "Attack slope",
+         "type": 3,
+         "len": 2,
+         "value": "10",
+         "min": 0,
+         "max": 99,
+         "help": "Counter increment per loud sample so the gate opens faster than it closes."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "USB Audio",
+     "type": 0,
+     "children": [
+      {
+       "name": "Gain",
+       "type": 3,
+       "len": 2,
+       "value": "0",
+       "min": 0,
+       "max": 99,
+       "unit": "dB",
+       "help": "Fixed gain applied to USB soundcard audio."
+      },
+      {
+       "name": "Monitor",
+       "type": 3,
+       "len": 2,
+       "value": "30",
+       "min": 0,
+       "max": 99,
+       "unit": "dB",
+       "help": "Earphone monitor volume of USB transmit audio; 0 disables."
+      },
+      {
+       "name": "PTT from DTR",
+       "type": 5,
+       "list": 9,
+       "value": "None",
+       "help": "Activate SSB PTT from the DTR line of a USB virtual COM port."
+      }
+     ]
+    },
+    {
+     "name": "VOX",
+     "type": 0,
+     "children": [
+      {
+       "name": "VOX",
+       "type": 5,
+       "list": 2,
+       "value": "OFF",
+       "help": "Enable voice operated transmit."
+      },
+      {
+       "name": "VOX threshold",
+       "type": 3,
+       "len": 2,
+       "value": "20",
+       "min": 0,
+       "max": 99,
+       "unit": "%",
+       "help": "Audio level (% of full scale) that triggers transmit."
+      },
+      {
+       "name": "VOX hold time",
+       "type": 3,
+       "len": 2,
+       "value": "10",
+       "min": 0,
+       "max": 99,
+       "unit": "0.1s",
+       "help": "Time held in transmit after audio drops, in tenths of a second."
+      }
+     ]
+    },
+    {
+     "name": "Drive level",
+     "type": 3,
+     "len": 4,
+     "value": "900",
+     "help": "Maximum amplitude modulator drive relative to supply voltage."
+    },
+    {
+     "name": "CESSB",
+     "type": 5,
+     "list": 2,
+     "value": "ON",
+     "help": "Controlled Envelope SSB, removes envelope overshoots for more average power."
+    },
+    {
+     "name": "Predistortion",
+     "type": 0,
+     "children": [
+      {
+       "name": "Phase predistort",
+       "type": 5,
+       "list": 2,
+       "value": "ON",
+       "help": "Apply per-band phase pre-distortion from the SSB calibration."
+      },
+      {
+       "name": "Ampl. predistort",
+       "type": 5,
+       "list": 2,
+       "value": "ON",
+       "help": "Switch off the transmitter at very low amplitudes."
+      },
+      {
+       "name": "Ampl. PD thresh.",
+       "type": 3,
+       "len": 4,
+       "value": "70",
+       "min": 0,
+       "max": 4095,
+       "help": "Amplitude pre-distortion threshold in DAC steps."
+      }
+     ]
+    },
+    {
+     "name": "PTT to TX delay",
+     "type": 3,
+     "len": 3,
+     "value": "0",
+     "min": 0,
+     "max": 999,
+     "unit": "ms",
+     "help": "Delay between PTT and transmission start (and release and receive)."
+    },
+    {
+     "name": "Band auto U/LSB",
+     "type": 5,
+     "list": 1,
+     "value": "NO",
+     "help": "Select LSB below 10MHz and USB above on band change."
+    },
+    {
+     "name": "Symmetric phase",
+     "type": 5,
+     "list": 1,
+     "value": "NO",
+     "help": "Wrap SSB phase to -pi..+pi for a cleaner speech spectrum."
+    }
+   ]
+  },
+  {
+   "name": "Frequency presets",
+   "type": 0,
+   "children": [
+    {
+     "name": "Preset 1",
+     "type": 3,
+     "len": 8,
+     "value": "1810000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 2",
+     "type": 3,
+     "len": 8,
+     "value": "3560000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 3",
+     "type": 3,
+     "len": 8,
+     "value": "5332000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 4",
+     "type": 3,
+     "len": 8,
+     "value": "7030000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 5",
+     "type": 3,
+     "len": 8,
+     "value": "14020000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 6",
+     "type": 3,
+     "len": 8,
+     "value": "14060000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 7",
+     "type": 3,
+     "len": 8,
+     "value": "18086000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 8",
+     "type": 3,
+     "len": 8,
+     "value": "21060000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 9",
+     "type": 3,
+     "len": 8,
+     "value": "24906000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 10",
+     "type": 3,
+     "len": 8,
+     "value": "28060000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 11",
+     "type": 3,
+     "len": 8,
+     "value": "50060000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 12",
+     "type": 3,
+     "len": 8,
+     "value": "7074000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 13",
+     "type": 3,
+     "len": 8,
+     "value": "14074000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 14",
+     "type": 3,
+     "len": 8,
+     "value": "10116000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 15",
+     "type": 3,
+     "len": 8,
+     "value": "3573000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    },
+    {
+     "name": "Preset 16",
+     "type": 3,
+     "len": 8,
+     "value": "10136000",
+     "unit": "Hz",
+     "help": "Stored frequency preset in Hz."
+    }
+   ]
+  },
+  {
+   "name": "Messages",
+   "type": 0,
+   "children": [
+    {
+     "name": "Message 1",
+     "type": 2,
+     "len": 50,
+     "value": "CQ CQ CQ DE N0CALL N0CALL K",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 2",
+     "type": 2,
+     "len": 50,
+     "value": "CQ CQ CQ DE G0UP",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 3",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 4",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 5",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 6",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 7",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 8",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 9",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 10",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters."
+    },
+    {
+     "name": "Message 11",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters. Also used for the custom splash top row."
+    },
+    {
+     "name": "Message 12",
+     "type": 2,
+     "len": 50,
+     "value": "",
+     "help": "Stored CW message, up to 50 characters. Also used for the custom splash bottom row."
+    },
+    {
+     "name": "Interval",
+     "type": 3,
+     "len": 2,
+     "value": "14",
+     "min": 0,
+     "max": 99,
+     "unit": "s",
+     "help": "Seconds between repeated message transmissions."
+    },
+    {
+     "name": "Repeats",
+     "type": 3,
+     "len": 2,
+     "value": "3",
+     "min": 0,
+     "max": 99,
+     "help": "Number of message repeats; 0 repeats indefinitely."
+    }
+   ]
+  },
+  {
+   "name": "VFO",
+   "type": 0,
+   "children": [
+    {
+     "name": "VFO modes",
+     "type": 0,
+     "children": [
+      {
+       "name": "A",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include VFO A in the VFO mode cycle."
+      },
+      {
+       "name": "B",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include VFO B in the VFO mode cycle."
+      },
+      {
+       "name": "Split",
+       "type": 7,
+       "list": 6,
+       "value": "DISABLED",
+       "help": "Include Split in the VFO mode cycle."
+      }
+     ]
+    },
+    {
+     "name": "VFO tune rates",
+     "type": 0,
+     "children": [
+      {
+       "name": "10MHz",
+       "type": 7,
+       "list": 1,
+       "value": "NO",
+       "help": "Enable the 10MHz VFO tune rate."
+      },
+      {
+       "name": "1MHz",
+       "type": 7,
+       "list": 1,
+       "value": "NO",
+       "help": "Enable the 1MHz VFO tune rate."
+      },
+      {
+       "name": "100kHz",
+       "type": 7,
+       "list": 1,
+       "value": "NO",
+       "help": "Enable the 100kHz VFO tune rate."
+      },
+      {
+       "name": "10kHz",
+       "type": 7,
+       "list": 1,
+       "value": "NO",
+       "help": "Enable the 10kHz VFO tune rate."
+      },
+      {
+       "name": "1kHz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 1kHz VFO tune rate."
+      },
+      {
+       "name": "500Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 500Hz VFO tune rate."
+      },
+      {
+       "name": "100Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 100Hz VFO tune rate."
+      },
+      {
+       "name": "10Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 10Hz VFO tune rate."
+      }
+     ]
+    },
+    {
+     "name": "RIT tune rates",
+     "type": 0,
+     "children": [
+      {
+       "name": "1kHz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 1kHz RIT tune rate."
+      },
+      {
+       "name": "500Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 500Hz RIT tune rate."
+      },
+      {
+       "name": "100Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 100Hz RIT tune rate."
+      },
+      {
+       "name": "10Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 10Hz RIT tune rate."
+      },
+      {
+       "name": "1Hz",
+       "type": 7,
+       "list": 1,
+       "value": "YES",
+       "help": "Enable the 1Hz RIT tune rate."
+      }
+     ]
+    },
+    {
+     "name": "PLL Denom. max.",
+     "type": 3,
+     "len": 7,
+     "value": "1048575",
+     "min": 1000,
+     "max": 1048575,
+     "help": "Max numerator/denominator for the synthesizer rational approximation (experimental)."
+    }
+   ]
+  },
+  {
+   "name": "Virtual U3S",
+   "type": 1,
+   "help": "Runs the built-in Ultimate3S-style beacon (WSPR, QRSS, etc.); described in a separate manual."
+  },
+  {
+   "name": "Display/controls",
+   "type": 0,
+   "children": [
+    {
+     "name": "Battery display",
+     "type": 0,
+     "children": [
+      {
+       "name": "Enable",
+       "type": 5,
+       "list": 18,
+       "value": "OFF",
+       "help": "Show battery voltage as an icon or number in the top right corner."
+      },
+      {
+       "name": "Batt. full",
+       "type": 3,
+       "len": 5,
+       "value": "12000",
+       "unit": "mV",
+       "help": "Voltage considered full."
+      },
+      {
+       "name": "Batt. step",
+       "type": 3,
+       "len": 5,
+       "value": "1000",
+       "unit": "mV",
+       "help": "Voltage step per battery icon bar."
+      }
+     ]
+    },
+    {
+     "name": "Pwr/SWR display",
+     "type": 0,
+     "children": [
+      {
+       "name": "Pwr/SWR display",
+       "type": 5,
+       "list": 19,
+       "value": "Graphs",
+       "help": "How power and SWR are shown during transmit."
+      },
+      {
+       "name": "Update interval",
+       "type": 3,
+       "len": 4,
+       "value": "100",
+       "unit": "ms",
+       "help": "Milliseconds between Power/SWR meter updates."
+      },
+      {
+       "name": "TX->RX hang time",
+       "type": 3,
+       "len": 4,
+       "value": "50",
+       "unit": "ms",
+       "help": "How long the meter stays visible after returning to receive."
+      }
+     ]
+    },
+    {
+     "name": "S-meter display",
+     "type": 0,
+     "children": [
+      {
+       "name": "S-meter",
+       "type": 5,
+       "list": 20,
+       "value": "Graph",
+       "help": "S-meter style."
+      },
+      {
+       "name": "Update interval",
+       "type": 3,
+       "len": 4,
+       "value": "50",
+       "unit": "ms",
+       "help": "Milliseconds between S-meter updates."
+      },
+      {
+       "name": "AGC display",
+       "type": 5,
+       "list": 2,
+       "value": "ON",
+       "help": "Show AGC attenuation as a second bar under the S-meter."
+      },
+      {
+       "name": "AGC dB per bar",
+       "type": 3,
+       "len": 2,
+       "value": "1",
+       "min": 0,
+       "max": 99,
+       "unit": "dB",
+       "help": "dB of AGC attenuation per pixel column; 0 disables the AGC bar."
+      }
+     ]
+    },
+    {
+     "name": "Dbl. click",
+     "type": 3,
+     "len": 4,
+     "value": "500",
+     "unit": "ms",
+     "help": "Button timing window for double clicks and long presses."
+    },
+    {
+     "name": "Band change",
+     "type": 3,
+     "len": 2,
+     "value": "20",
+     "min": 0,
+     "max": 99,
+     "help": "Extra band-change timeout in tenths of a second (plus 1s)."
+    },
+    {
+     "name": "Volume change",
+     "type": 3,
+     "len": 2,
+     "value": "20",
+     "min": 0,
+     "max": 99,
+     "help": "How long the new volume is shown, in tenths of a second."
+    },
+    {
+     "name": "Cursor blink",
+     "type": 5,
+     "list": 2,
+     "value": "OFF",
+     "help": "Use a blinking block cursor instead of an underline when editing."
+    },
+    {
+     "name": "Custom splash",
+     "type": 5,
+     "list": 1,
+     "value": "NO",
+     "help": "Show messages 11 and 12 as the power-up splash screen."
+    },
+    {
+     "name": "Clock",
+     "type": 5,
+     "list": 2,
+     "value": "OFF",
+     "help": "Show the real time clock during operation."
+    },
+    {
+     "name": "Delim",
+     "type": 5,
+     "list": 21,
+     "value": ",",
+     "help": "Thousands separator used in frequency displays."
+    },
+    {
+     "name": "Backlight",
+     "type": 5,
+     "list": 2,
+     "value": "ON",
+     "help": "LCD backlight on or off at power-up."
+    },
+    {
+     "name": "Mode as Char",
+     "type": 5,
+     "list": 1,
+     "value": "NO",
+     "help": "Show the mode as a plain letter instead of a custom graphic."
+    }
+   ]
+  },
+  {
+   "name": "Protection",
+   "type": 0,
+   "children": [
+    {
+     "name": "Max. PA voltage",
+     "type": 3,
+     "len": 4,
+     "value": "11.5",
+     "unit": "V",
+     "help": "Limits the PA supply voltage; can also be used to reduce power."
+    },
+    {
+     "name": "SWR protection",
+     "type": 5,
+     "list": 6,
+     "value": "ENABLED",
+     "help": "Inhibit transmit when SWR exceeds the threshold."
+    },
+    {
+     "name": "SWR threshold",
+     "type": 3,
+     "len": 2,
+     "value": "3",
+     "help": "SWR at which transmit is inhibited."
+    },
+    {
+     "name": "Protection reset",
+     "type": 5,
+     "list": 22,
+     "value": "Button",
+     "help": "How a triggered SWR protection is cleared."
+    },
+    {
+     "name": "SWR timeout",
+     "type": 3,
+     "len": 2,
+     "value": "2",
+     "unit": "s",
+     "help": "Seconds before SWR protection clears when reset mode is Timer."
+    },
+    {
+     "name": "SWR warn style",
+     "type": 5,
+     "list": 23,
+     "value": "Plain",
+     "help": "How the SWR protection warning is displayed."
+    },
+    {
+     "name": "Tune %",
+     "type": 3,
+     "len": 2,
+     "value": "50",
+     "min": 0,
+     "max": 99,
+     "unit": "%",
+     "help": "PA voltage percentage used by the SWR tools."
+    },
+    {
+     "name": "GPS protection",
+     "type": 5,
+     "list": 6,
+     "value": "ENABLED",
+     "help": "Prevent keying when a GPS is connected to the paddle port."
+    },
+    {
+     "name": "Supply voltage",
+     "type": 5,
+     "list": 24,
+     "value": "Prevent TX",
+     "help": "Action taken when the supply voltage is out of range."
+    },
+    {
+     "name": "Min voltage",
+     "type": 3,
+     "len": 2,
+     "value": "7",
+     "unit": "V",
+     "help": "Lower supply voltage limit."
+    },
+    {
+     "name": "Max voltage",
+     "type": 3,
+     "len": 2,
+     "value": "14",
+     "unit": "V",
+     "help": "Upper supply voltage limit."
+    }
+   ]
+  },
+  {
+   "name": "System config",
+   "type": 0,
+   "children": [
+    {
+     "name": "Band version",
+     "type": 6,
+     "value": "160-6m",
+     "help": "Read-only band version chosen at first power-up; change via factory reset."
+    },
+    {
+     "name": "TCXO frequency",
+     "type": 3,
+     "len": 8,
+     "value": "25000000",
+     "unit": "Hz",
+     "help": "Reference oscillator frequency used for synthesizer calculations; adjust to calibrate."
+    },
+    {
+     "name": "Band limits",
+     "type": 5,
+     "list": 25,
+     "value": "ITU Region 2",
+     "help": "Band plan used to block out-of-band transmission."
+    },
+    {
+     "name": "RX outside band",
+     "type": 5,
+     "list": 2,
+     "value": "OFF",
+     "help": "Allow VFO tuning outside the defined band limits."
+    },
+    {
+     "name": "CAT config",
+     "type": 0,
+     "children": [
+      {
+       "name": "Timeout",
+       "type": 5,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Return to receive if no CAT receive command arrives in time."
+      },
+      {
+       "name": "Timeout (s)",
+       "type": 3,
+       "len": 3,
+       "value": "120",
+       "unit": "s",
+       "help": "CAT transmit timeout duration."
+      },
+      {
+       "name": "RU and RD",
+       "type": 5,
+       "list": 14,
+       "value": "Relative",
+       "help": "Whether CAT RU/RD commands set the RIT absolutely or relative to its current value."
+      },
+      {
+       "name": "KY TS480",
+       "type": 5,
+       "list": 1,
+       "value": "NO",
+       "help": "Use Kenwood TS-480 compatible KY command behaviour."
+      },
+      {
+       "name": "MM Effect",
+       "type": 5,
+       "list": 26,
+       "value": "On demand",
+       "help": "Whether CAT MM set commands take effect immediately or on reload (MU;)."
+      }
+     ]
+    },
+    {
+     "name": "IQ Mode",
+     "type": 5,
+     "list": 6,
+     "value": "DISABLED",
+     "help": "Stream raw I/Q to the USB soundcard for external SDR software."
+    },
+    {
+     "name": "Set time",
+     "type": 2,
+     "len": 5,
+     "value": "00:26",
+     "help": "Sets the real time clock (HH:MM)."
+    },
+    {
+     "name": "Real time clock",
+     "type": 5,
+     "list": 27,
+     "value": "Software",
+     "help": "Real time clock source."
+    },
+    {
+     "name": "GPS & Ser. Ports",
+     "type": 0,
+     "children": [
+      {
+       "name": "GPS source",
+       "type": 5,
+       "list": 28,
+       "value": "Paddle port",
+       "help": "Where the GPS is connected."
+      },
+      {
+       "name": "Stream GPS NMEA",
+       "type": 5,
+       "list": 29,
+       "value": "None",
+       "help": "Forward GPS NMEA data to the chosen serial port."
+      },
+      {
+       "name": "USB serial ports",
+       "type": 5,
+       "list": 30,
+       "value": "1",
+       "help": "Number of USB virtual COM ports; takes effect after a power cycle."
+      },
+      {
+       "name": "Serial 1 on AUX",
+       "type": 5,
+       "list": 6,
+       "value": "DISABLED",
+       "help": "Use the AUX jack as serial port 1."
+      },
+      {
+       "name": "Serial 1 baud",
+       "type": 5,
+       "list": 31,
+       "value": "9600",
+       "help": "Baud rate of serial port 1."
+      },
+      {
+       "name": "Serial 6 on PTT",
+       "type": 5,
+       "list": 6,
+       "value": "DISABLED",
+       "help": "Use the PTT jack as serial port 6 (requires hardware change)."
+      },
+      {
+       "name": "Serial 6 baud",
+       "type": 5,
+       "list": 31,
+       "value": "9600",
+       "help": "Baud rate of serial port 6."
+      },
+      {
+       "name": "USB TX > QLG3 RX",
+       "type": 5,
+       "list": 1,
+       "value": "NO",
+       "help": "Pass USB serial through to the internal QLG3 for its firmware update."
+      }
+     ]
+    },
+    {
+     "name": "Advanced config!",
+     "type": 0,
+     "children": [
+      {
+       "name": "DO NOT DISABLE!!",
+       "type": 6,
+       "value": "",
+       "help": "Warning: do not disable the following settings."
+      },
+      {
+       "name": "Mod. High in RX",
+       "type": 5,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Keep the PA modulator voltage high during receive."
+      },
+      {
+       "name": "Normal 5ms shape",
+       "type": 5,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Normal CW/Digi envelope shaping; disable only for testing."
+      },
+      {
+       "name": "20/80m BPF TXswap",
+       "type": 5,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Protective BPF switching measure; disabling is not recommended."
+      }
+     ]
+    },
+    {
+     "name": "Accessibility",
+     "type": 0,
+     "children": [
+      {
+       "name": "Simple terminal",
+       "type": 5,
+       "list": 1,
+       "value": "NO",
+       "help": "Simplified terminal layout for screen readers."
+      },
+      {
+       "name": "Tab number menus",
+       "type": 5,
+       "list": 1,
+       "value": "NO",
+       "help": "Jump to a menu row with Tab followed by its number."
+      }
+     ]
+    },
+    {
+     "name": "Modes enabled",
+     "type": 0,
+     "children": [
+      {
+       "name": "CW",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include CW in the mode cycle and show its menus."
+      },
+      {
+       "name": "Digi",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include Digi in the mode cycle and show its menus."
+      },
+      {
+       "name": "USB",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include USB in the mode cycle and show its menus."
+      },
+      {
+       "name": "LSB",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include LSB in the mode cycle and show its menus."
+      },
+      {
+       "name": "AM",
+       "type": 7,
+       "list": 6,
+       "value": "ENABLED",
+       "help": "Include AM in the mode cycle and show its menus."
+      }
+     ]
+    },
+    {
+     "name": "Experimental",
+     "type": 0,
+     "children": [
+      {
+       "name": "Password",
+       "type": 6,
+       "value": "Locked",
+       "help": "Password-protected experimental settings."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Hardware tests",
+   "type": 0,
+   "children": [
+    {
+     "name": "AF filter sweep",
+     "type": 1,
+     "help": "Sweeps the receive audio response (use dummy load)."
+    },
+    {
+     "name": "RF filter sweep",
+     "type": 1,
+     "help": "Sweeps the band pass filter response (use dummy load)."
+    },
+    {
+     "name": "Image sweep",
+     "type": 1,
+     "help": "Measures image rejection (use dummy load)."
+    },
+    {
+     "name": "SWR measurement",
+     "type": 1,
+     "help": "Transmits at reduced power to measure SWR."
+    },
+    {
+     "name": "LPF filter sweep",
+     "type": 1,
+     "help": "Sweeps the low pass filter response (use dummy load)."
+    },
+    {
+     "name": "PA mod test",
+     "type": 1,
+     "help": "Measures the amplitude modulator response."
+    },
+    {
+     "name": "Test ADC I/Q",
+     "type": 1,
+     "help": "Shows the raw ADC I/Q waveforms (use dummy load)."
+    },
+    {
+     "name": "SSB Calibration",
+     "type": 1,
+     "help": "Runs SSB phase error and sync calibration (use dummy load)."
+    },
+    {
+     "name": "Mic test",
+     "type": 1,
+     "help": "Shows microphone level live."
+    },
+    {
+     "name": "Diagnostics",
+     "type": 1,
+     "help": "Live supply, SMPS, PA and paddle diagnostics."
+    },
+    {
+     "name": "GPS viewer",
+     "type": 1,
+     "help": "Shows GPS status, position and grid."
+    }
+   ]
+  },
+  {
+   "name": "Band config.",
+   "type": 0,
+   "columns": 16,
+   "children": [
+    {
+     "name": "Band name (m)",
+     "type": 3,
+     "len": 4,
+     "values": [
+      "160",
+      "80",
+      "60",
+      "40",
+      "30",
+      "20",
+      "17",
+      "15",
+      "12",
+      "11",
+      "10",
+      "6",
+      "",
+      "",
+      "",
+      ""
+     ],
+     "help": "Band name; identifies the column in tools and affects some behaviour."
+    },
+    {
+     "name": "RF gain (db)",
+     "type": 3,
+     "len": 2,
+     "values": [
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "54",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "min": 0,
+     "max": 99,
+     "unit": "dB",
+     "help": "Per-band receive gain; also sets the S-meter reference."
+    },
+    {
+     "name": "Frequency min.",
+     "type": 3,
+     "len": 8,
+     "values": [
+      "1800000",
+      "3500000",
+      "5250000",
+      "7000000",
+      "10100000",
+      "14000000",
+      "18068000",
+      "21000000",
+      "24890000",
+      "26965000",
+      "28000000",
+      "50000000",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "unit": "Hz",
+     "help": "Lower band edge for CAT frequency commands."
+    },
+    {
+     "name": "Frequency center",
+     "type": 3,
+     "len": 8,
+     "values": [
+      "1836600",
+      "3573000",
+      "5357000",
+      "7074000",
+      "10136000",
+      "14074000",
+      "18100000",
+      "21074000",
+      "24915000",
+      "27255000",
+      "28074000",
+      "50313000",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "unit": "Hz",
+     "help": "Reference frequency used by sweeps and test tools."
+    },
+    {
+     "name": "Frequency max.",
+     "type": 3,
+     "len": 8,
+     "values": [
+      "2000000",
+      "4000000",
+      "5450000",
+      "7300000",
+      "10150000",
+      "14350000",
+      "18168000",
+      "21450000",
+      "24990000",
+      "27405000",
+      "29700000",
+      "54000000",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "unit": "Hz",
+     "help": "Upper band edge for CAT frequency commands."
+    },
+    {
+     "name": "Sweep start",
+     "type": 3,
+     "len": 8,
+     "values": [
+      "918300",
+      "1786500",
+      "2678500",
+      "3537000",
+      "5068000",
+      "7037000",
+      "9050000",
+      "10537000",
+      "12457500",
+      "13627500",
+      "14037000",
+      "25156500",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "unit": "Hz",
+     "help": "Start frequency of the RF sweep."
+    },
+    {
+     "name": "Sweep step",
+     "type": 3,
+     "len": 6,
+     "values": [
+      "24488",
+      "47640",
+      "71426",
+      "94320",
+      "135146",
+      "187653",
+      "241333",
+      "280986",
+      "332200",
+      "363400",
+      "374320",
+      "670840",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "unit": "Hz",
+     "help": "Step per point of the 76-point RF sweep."
+    },
+    {
+     "name": "BPF number (0-3)",
+     "type": 3,
+     "len": 1,
+     "values": [
+      "0",
+      "0",
+      "1",
+      "1",
+      "2",
+      "2",
+      "3",
+      "3",
+      "3",
+      "3",
+      "3",
+      "3",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "min": 0,
+     "max": 3,
+     "help": "Band pass filter used on this band."
+    },
+    {
+     "name": "LPF number (0-2)",
+     "type": 3,
+     "len": 1,
+     "values": [
+      "0",
+      "0",
+      "1",
+      "1",
+      "1",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "2",
+      "0",
+      "0",
+      "0",
+      "0"
+     ],
+     "min": 0,
+     "max": 2,
+     "help": "Low pass filter used on this band."
+    },
+    {
+     "name": "PIN fwd bias (mA)",
+     "type": 3,
+     "len": 2,
+     "values": [
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30",
+      "30"
+     ],
+     "min": 5,
+     "max": 60,
+     "unit": "mA",
+     "help": "PIN diode switch forward current during transmit."
+    },
+    {
+     "name": "Transmit",
+     "type": 5,
+     "list": 6,
+     "values": [
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "ENABLED",
+      "DISABLED",
+      "ENABLED",
+      "ENABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED"
+     ],
+     "help": "Allow transmission on this band."
+    },
+    {
+     "name": "TX PTT +5V",
+     "type": 5,
+     "list": 6,
+     "values": [
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED"
+     ],
+     "help": "+5V on PTT ring during transmit."
+    },
+    {
+     "name": "TX PTT grounded",
+     "type": 5,
+     "list": 6,
+     "values": [
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED"
+     ],
+     "help": "PTT tip grounded during transmit."
+    },
+    {
+     "name": "RX PTT +5V",
+     "type": 5,
+     "list": 6,
+     "values": [
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED"
+     ],
+     "help": "+5V on PTT ring during receive."
+    },
+    {
+     "name": "RX PTT grounded",
+     "type": 5,
+     "list": 6,
+     "values": [
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED",
+      "DISABLED"
+     ],
+     "help": "PTT tip grounded during receive."
+    }
+   ]
+  },
+  {
+   "name": "Factory Reset",
+   "type": 1,
+   "help": "Restores all settings to factory defaults after confirmation."
+  },
+  {
+   "name": "Update firmware",
+   "type": 1,
+   "help": "Reboots into the bootloader for a firmware update after confirmation."
+  }
+ ]
+}

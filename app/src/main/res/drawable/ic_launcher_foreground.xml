@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Three slider "settings" bars with knobs, on a 108dp adaptive canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FF7FD3C9" android:pathData="M32,40h44v4h-44z M32,52h44v4h-44z M32,64h44v4h-44z" />
+    <path android:fillColor="#FFFFB547"
+        android:pathData="M44,42m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0 M64,54m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0 M50,66m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0" />
+</vector>

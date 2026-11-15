@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- QRP Labs QMX / QMX+ / QDX (STMicro VID, CDC-ACM) -->
+    <usb-device vendor-id="1155" />
+    <!-- FTDI / CP210x / CH34x USB-serial cables (QCX-series via serial adapter) -->
+    <usb-device vendor-id="1027" />
+    <usb-device vendor-id="4292" />
+    <usb-device vendor-id="6790" />
+</resources>
