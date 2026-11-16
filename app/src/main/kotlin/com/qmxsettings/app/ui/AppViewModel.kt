@@ -70,6 +70,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         out
     }
 
+    /** Firmware update and EEPROM backup via the QMX bootloader drive. */
+    val fw = com.qmxsettings.app.firmware.FirmwareController(app, viewModelScope) { message = it }
+
     private val store = ProfileStore(File(app.filesDir, "profiles"))
 
     var mode by mutableStateOf(LinkMode.NONE); private set

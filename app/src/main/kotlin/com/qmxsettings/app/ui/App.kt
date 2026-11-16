@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmarks
+import androidx.compose.material.icons.filled.SystemUpdateAlt
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Tune
@@ -66,6 +67,7 @@ enum class Tab(val label: String, val icon: ImageVector) {
     MENU("Settings", Icons.Filled.ViewList),
     CONTROLS("Controls", Icons.Filled.Tune),
     PROFILES("Profiles", Icons.Filled.Bookmarks),
+    FIRMWARE("Update", Icons.Filled.SystemUpdateAlt),
     CONSOLE("Console", Icons.Filled.Terminal),
 }
 
@@ -110,6 +112,7 @@ fun App(vm: AppViewModel) {
                     Tab.MENU -> MenuScreen(vm)
                     Tab.CONTROLS -> ControlsScreen(vm)
                     Tab.PROFILES -> ProfilesScreen(vm)
+                    Tab.FIRMWARE -> FirmwareScreen(vm)
                     Tab.CONSOLE -> ConsoleScreen(vm)
                 }
             }
