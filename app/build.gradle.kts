@@ -12,8 +12,8 @@ android {
         applicationId = "com.qmxsettings.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.1.1"
     }
 
     buildTypes {
@@ -61,4 +61,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation("org.json:json:20240303")
+    testImplementation("com.fazecast:jSerialComm:2.11.0")
 }

@@ -58,8 +58,9 @@ fun ControlsScreen(vm: AppViewModel) {
                 }
                 items(list, key = { it.code }) { p ->
                     val v = vm.catValues[p.code]
+                    val missing = p.code in vm.unsupported
                     Row(
-                        Modifier.fillMaxWidth().clickable(enabled = !p.readOnly) { editing = p }.padding(horizontal = 16.dp, vertical = 10.dp),
+                        Modifier.fillMaxWidth().clickable(enabled = !p.readOnly && !missing) { editing = p }.padding(horizontal = 16.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Column(Modifier.weight(1f)) {
@@ -67,9 +68,9 @@ fun ControlsScreen(vm: AppViewModel) {
                             Text("${p.code} · ${p.help}", style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         }
-                        Text(p.display(v), fontFamily = FontFamily.Monospace, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        Text(if (missing) "not in this firmware" else p.display(v), fontFamily = FontFamily.Monospace, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.widthIn(max = 170.dp),
-                            color = if (p.readOnly) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary)
+                            color = if (p.readOnly || missing) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary)
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                 }

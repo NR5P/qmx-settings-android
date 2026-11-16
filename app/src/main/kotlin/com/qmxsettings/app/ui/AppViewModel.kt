@@ -83,6 +83,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var treeVersion by mutableIntStateOf(0); private set
     var progress by mutableStateOf<DiscoveryProgress?>(null); private set
     val catValues = mutableStateMapOf<String, String?>()
+    /** CAT codes the radio answered with "?" (command not in this firmware). */
+    val unsupported = mutableStateListOf<String>()
     val profiles = mutableStateListOf<Profile>()
     val log = mutableStateListOf<CatLogLine>()
     var message by mutableStateOf<String?>(null)
@@ -165,6 +167,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         tree = null
         progress = null
         catValues.clear()
+        unsupported.clear()
     }
 
     private suspend fun identify() {
@@ -226,6 +229,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             progress = DiscoveryProgress("Reading ${p.label}", i, list.size)
             val r = c.query(p.getCmd, p.replyPrefix)
             catValues[p.code] = (r as? CatReply.Ok)?.let { p.parseReply(it.frame) }
+            if (r is CatReply.Error) { if (p.code !in unsupported) unsupported += p.code } else unsupported -= p.code
         }
     }
 
@@ -346,6 +350,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
                 EntryKind.CAT -> {
                     val p = params.firstOrNull { it.code == e.key } ?: run { failed += e.label; null } ?: continue
+                    // The radio doesn't range-check (e.g. KS999 is stored as 231), so never send an invalid value.
+                    if (p.validate(e.value) != null) { failed += e.label; continue }
                     val res = c.command(p.setCommand(e.value))
                     val back = (c.query(p.getCmd, p.replyPrefix) as? CatReply.Ok)?.let { p.parseReply(it.frame) }
                     catValues[p.code] = back

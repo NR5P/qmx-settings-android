@@ -80,4 +80,16 @@ class MenuManagerTest {
         val back = Profile.fromJson(JSONObject(p.toJson().toString()))
         assertEquals(p, back)
     }
+
+    @Test fun displaysRealRadioValues() {
+        // Values as returned by a real QMX on firmware 1_02_005.
+        val p = com.qmxsettings.app.cat.CatParams.forFamily(com.qmxsettings.app.cat.RadioFamily.QMX).associateBy { it.code }
+        assertEquals("10 WPM", p["KS"]!!.display("010"))
+        assertEquals("54 × 0.25 dB", p["AG"]!!.display("054"))
+        assertEquals("7.100.500", p["FA"]!!.display("00007100500"))
+        assertEquals("26214 (raw)", p["Q4"]!!.display("26214"))
+        assertEquals("80 %", p["Q4"]!!.display("80"))
+        assertEquals("Maximum 60", p["KS"]!!.validate("999"))
+        assertTrue(com.qmxsettings.app.ui.menuManagerMissing("1_02_005QMX").contains("1_02_006"))
+    }
 }

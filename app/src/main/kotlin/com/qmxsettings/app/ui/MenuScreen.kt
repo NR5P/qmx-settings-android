@@ -60,11 +60,19 @@ fun NotConnected(text: String = "Connect to a radio (or start the demo) on the R
     }
 }
 
+/** Explains why the full settings menu isn't shown. Menu Manager CAT commands arrived in QMX firmware 1_02_006. */
+fun menuManagerMissing(firmware: String?): String {
+    val fw = firmware?.takeIf { it.isNotBlank() }
+    return if (fw != null && fw.contains("QMX", ignoreCase = true))
+        "This QMX has firmware $fw. Reading and changing all menu settings over USB needs firmware 1_02_006 or newer (Menu Manager CAT commands). Update the firmware from qrp-labs.com to use this tab.\n\nSession controls are still available on the Controls tab."
+    else "This radio doesn't support Menu Manager CAT commands, so its full settings menu can't be read over USB. Use the Controls tab."
+}
+
 @Composable
 fun MenuScreen(vm: AppViewModel) {
     val tree = vm.tree
     if (!vm.connected) return NotConnected()
-    if (tree == null) return NotConnected(if (vm.menuManager) "Reading menu…" else "Menu Manager not available on this radio — see Controls.")
+    if (tree == null) return NotConnected(if (vm.menuManager) "Reading menu…" else menuManagerMissing(vm.firmware))
 
     val stack = remember { mutableStateListOf<MenuNode>() }
     var query by remember { mutableStateOf("") }

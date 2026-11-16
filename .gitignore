@@ -11,3 +11,5 @@ keystore.properties
 captures/
 *.apk
 Docs/*.pdf
+radio-backup*.json
+radio-test-logs/

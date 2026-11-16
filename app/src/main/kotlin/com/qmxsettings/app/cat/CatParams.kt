@@ -41,7 +41,11 @@ data class CatParam(
             return options.firstOrNull { it.first == value || it.first == v }?.second ?: value
         }
         if (kind == ParamKind.FREQ) return value.toLongOrNull()?.let { formatHz(it) } ?: value
-        return if (unit.isNotEmpty()) "$value $unit" else value
+        val n = value.toLongOrNull()
+        val shown = n?.toString() ?: value // "054" -> "54"
+        // Older QMX firmware reports Q4/Q5 as a raw 16-bit value rather than a 0-99 percentage.
+        if (unit == "%" && n != null && max != null && n > max) return "$shown (raw)"
+        return if (unit.isNotEmpty()) "$shown $unit" else shown
     }
 
     fun validate(value: String): String? {
@@ -105,8 +109,8 @@ object CatParams {
         CatParam("Q0", "TCXO reference", "Session (Q-commands)", ParamKind.NUMBER, "TCXO reference frequency, 24999000-25001000 Hz.", min = 24_999_000, max = 25_001_000, unit = "Hz"),
         CatParam("Q1", "Sideband", "Session (Q-commands)", ParamKind.LIST, "Digi sideband.", options = listOf("0" to "USB", "1" to "LSB")),
         CatParam("Q3", "VOX", "Session (Q-commands)", ParamKind.LIST, "VOX enable.", options = enDis),
-        CatParam("Q4", "TX rise threshold", "Session (Q-commands)", ParamKind.NUMBER, "Percent, default 80.", min = 0, max = 99, unit = "%"),
-        CatParam("Q5", "TX fall threshold", "Session (Q-commands)", ParamKind.NUMBER, "Percent, default 60.", min = 0, max = 99, unit = "%"),
+        CatParam("Q4", "TX rise threshold", "Session (Q-commands)", ParamKind.NUMBER, "Percent, default 80. Firmware before 1_02_006 reports a raw 0-65535 value instead.", min = 0, max = 99, unit = "%"),
+        CatParam("Q5", "TX fall threshold", "Session (Q-commands)", ParamKind.NUMBER, "Percent, default 60. Firmware before 1_02_006 reports a raw 0-65535 value instead.", min = 0, max = 99, unit = "%"),
         CatParam("Q6", "Cycle min", "Session (Q-commands)", ParamKind.NUMBER, "Digi frequency measurement Cycle Min.", min = 0, max = 999),
         CatParam("Q7", "Sample min", "Session (Q-commands)", ParamKind.NUMBER, "Digi frequency measurement Sample Min.", min = 0, max = 999),
         CatParam("Q8", "Discard", "Session (Q-commands)", ParamKind.NUMBER, "Digi frequency measurement Discard.", min = 0, max = 999),
