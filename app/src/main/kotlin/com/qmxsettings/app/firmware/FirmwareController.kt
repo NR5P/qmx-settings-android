@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,9 @@ data class Op(val text: String, val fraction: Float? = null)
 class FirmwareController(private val context: Context, private val scope: CoroutineScope, private val notify: (String) -> Unit) {
     private val manager = context.getSystemService(Context.USB_SERVICE) as UsbManager
     private val backupDir = File(context.filesDir, "eeprom-backups").apply { mkdirs() }
+    /** Firmware kept on the phone so it can be installed without internet (e.g. in the field). */
+    private val fwDir = File(context.filesDir, "firmware").apply { mkdirs() }
+    private val releasesCache = File(fwDir, "releases.json")
 
     var releases by mutableStateOf<List<FirmwareRelease>>(emptyList()); private set
     var releasesError by mutableStateOf<String?>(null); private set
@@ -47,10 +51,44 @@ class FirmwareController(private val context: Context, private val scope: Corout
     var op by mutableStateOf<Op?>(null); private set
     var lastResult by mutableStateOf<String?>(null); private set
     val backups = mutableStateListOf<File>()
+    /** Firmware images stored on the phone, newest version first. */
+    val stored = mutableStateListOf<FirmwareImage>()
+    /** True when [releases] came from the phone's copy because qrp-labs.com couldn't be reached. */
+    var releasesOffline by mutableStateOf(false); private set
+    /** The user says this radio is a QMX+ (some versions are QMX+ only; CAT can't tell QMX from QMX+). */
+    var isQmxPlus by mutableStateOf(false)
 
     val busy get() = op != null
 
-    init { refreshBackups() }
+    init {
+        refreshBackups(); refreshStored()
+        try { releases = parseCache(releasesCache.readText()); releasesOffline = releases.isNotEmpty() } catch (_: Exception) {}
+    }
+
+    private fun refreshStored() {
+        stored.clear()
+        stored += fwDir.listFiles { f -> f.name.endsWith(".QMX", true) }.orEmpty().mapNotNull {
+            try { FirmwareCatalog.validate(FirmwareImage(it.name, it.readBytes())) } catch (_: Exception) { it.delete(); null }
+        }.sortedByDescending { FirmwareVersion.parse(it.fileName) }
+    }
+
+    private fun store(img: FirmwareImage) { File(fwDir, img.fileName).writeBytes(img.data); refreshStored() }
+
+    fun deleteStored(img: FirmwareImage) { File(fwDir, img.fileName).delete(); if (image?.fileName == img.fileName) image = null; refreshStored() }
+
+    fun select(img: FirmwareImage) { image = img; notify("Ready to install ${img.version}") }
+
+    /** Official list entry for [img] (release notes, beta/stable, QMX+-only, factory reset). */
+    fun releaseFor(img: FirmwareImage) = releases.firstOrNull { it.version == img.version }
+
+    private fun toCache(list: List<FirmwareRelease>) = org.json.JSONArray(list.map {
+        org.json.JSONObject().put("v", it.version).put("d", it.date).put("n", it.notes).put("u", it.url)
+    }).toString()
+
+    private fun parseCache(s: String): List<FirmwareRelease> {
+        val a = org.json.JSONArray(s)
+        return (0 until a.length()).map { a.getJSONObject(it) }.map { FirmwareRelease(it.getString("v"), it.getString("d"), it.getString("n"), it.getString("u")) }
+    }
 
     private fun refreshBackups() {
         backups.clear()
@@ -61,7 +99,7 @@ class FirmwareController(private val context: Context, private val scope: Corout
         if (busy) { notify("Busy — wait for the current step to finish"); return }
         op = Op(start)
         scope.launch {
-            try { block() } catch (e: Exception) { notify(e.message ?: e.toString()); lastResult = "Failed: ${e.message ?: e}" } finally { op = null }
+            try { block() } catch (e: Exception) { Log.e("QmxFw", "$start failed", e); notify(e.message ?: e.toString()); lastResult = "Failed: ${e.message ?: e}" } finally { op = null }
         }
     }
 
@@ -69,20 +107,35 @@ class FirmwareController(private val context: Context, private val scope: Corout
 
     fun loadReleases() = run("Reading firmware list from qrp-labs.com") {
         releasesError = null
-        releases = try { withContext(Dispatchers.IO) { FirmwareCatalog.fetchReleases() } } catch (e: Exception) {
-            releasesError = "Couldn't read ${FirmwareCatalog.PAGE}: ${e.message}"; emptyList()
+        val fresh = try { withContext(Dispatchers.IO) { FirmwareCatalog.fetchReleases() } } catch (e: Exception) {
+            releasesError = "Couldn't reach ${FirmwareCatalog.PAGE} (${e.message})" + if (releases.isNotEmpty()) " — showing the list saved on this phone." else ""
+            null
         }
-        if (releases.isEmpty() && releasesError == null) releasesError = "No firmware versions found on ${FirmwareCatalog.PAGE}"
+        if (fresh != null) {
+            if (fresh.isEmpty()) { releasesError = "No firmware versions found on ${FirmwareCatalog.PAGE}"; return@run }
+            releases = fresh; releasesOffline = false
+            withContext(Dispatchers.IO) { releasesCache.writeText(toCache(fresh)) }
+            // Keep the latest stable version on the phone so an update works without internet.
+            fresh.firstOrNull { it.stable && !it.qmxPlusOnly }?.let { r ->
+                if (stored.none { it.version == r.version }) {
+                    op = Op("Saving ${r.version} (latest stable) to this phone")
+                    try { val img = withContext(Dispatchers.IO) { FirmwareCatalog.download(r) }; withContext(Dispatchers.IO) { store(img) } } catch (_: Exception) {}
+                }
+            }
+        }
     }
 
     fun download(r: FirmwareRelease) = run("Downloading ${r.version}") {
-        image = withContext(Dispatchers.IO) { FirmwareCatalog.download(r) }
-        notify("Ready to install ${image!!.version}")
+        val img = stored.firstOrNull { it.version == r.version } ?: withContext(Dispatchers.IO) { FirmwareCatalog.download(r).also { store(it) } }
+        image = img
+        notify("Ready to install ${img.version}")
     }
 
     fun useFile(name: String, bytes: ByteArray) = run("Checking $name") {
-        image = withContext(Dispatchers.Default) { FirmwareCatalog.fromFile(name, bytes) }
-        notify("Ready to install ${image!!.version}")
+        val img = withContext(Dispatchers.Default) { FirmwareCatalog.fromFile(name, bytes) }
+        withContext(Dispatchers.IO) { store(img) }
+        image = img
+        notify("Ready to install ${img.version}")
     }
 
     // MARK: the bootloader drive
@@ -102,6 +155,7 @@ class FirmwareController(private val context: Context, private val scope: Corout
 
     private fun describe(v: FatVolume, label: String): DriveInfo {
         val files = v.files()
+        Log.i("QmxFw", "FAT${v.fatBits} partitionStart=${v.partitionStart} cluster=${v.clusterBytes} files=${files.map { "${it.name}:${it.size}@${it.firstCluster}" }}")
         return DriveInfo(label, files.firstOrNull { it.name.endsWith(".QMX", true) }?.name, files.firstOrNull { it.name.equals("EEPROM", true) }?.size, files.map { it.name })
     }
 
@@ -150,12 +204,21 @@ class FirmwareController(private val context: Context, private val scope: Corout
         val d = candidates().firstOrNull() ?: throw IOException("QMX update drive not found")
         val (bytes, fw) = withDrive(d) { _, v -> val (fw, ee) = requireQmx(v); v.read(ee) to fw.name }
         val f = saveBackup(bytes, fw)
+        Log.i("QmxFw", "EEPROM backup ${bytes.size} bytes -> ${f.name}")
         lastResult = "EEPROM backed up (${bytes.size} bytes) to ${f.name}"
         notify(lastResult!!)
     }
 
+    /** What to tell the user before installing [image] over what's on the radio's update drive. */
+    fun installNotes(): List<InstallNote> {
+        val img = image ?: return emptyList()
+        val target = FirmwareVersion.parse(img.fileName) ?: return emptyList()
+        return InstallCheck.notes(FirmwareVersion.parse(drive?.firmwareFile), target, releaseFor(img), isQmxPlus)
+    }
+
     fun install() {
         val img = image ?: return notify("Choose a firmware version first")
+        if (installNotes().any { it.level == InstallNote.Level.BLOCK }) return notify("This version can't be installed on this radio — see the notes")
         run("Preparing to install ${img.version}") {
             val d = candidates().firstOrNull() ?: throw IOException("QMX update drive not found")
             val outcome = withDrive(d) { _, v ->
@@ -169,7 +232,7 @@ class FirmwareController(private val context: Context, private val scope: Corout
                 o to backup
             }
             lastResult = when (outcome.first) {
-                FatVolume.WriteOutcome.Complete -> "Firmware ${img.version} copied to the QMX. It installs it and restarts by itself; then reconnect on the Radio tab to check the version. (EEPROM backup: ${outcome.second.name})"
+                FatVolume.WriteOutcome.Complete -> (if (releaseFor(img)?.factoryReset == true) "This version factory-resets the radio: when it restarts, choose your band version on the radio. " else "") + "Firmware ${img.version} copied to the QMX. It installs it and restarts by itself; then reconnect on the Radio tab to check the version. (EEPROM backup: ${outcome.second.name})"
                 is FatVolume.WriteOutcome.DataWrittenThenDisconnected -> "All of ${img.version} was sent and the radio disconnected, which is what it does when it restarts into new firmware. Reconnect on the Radio tab to check the version. (EEPROM backup: ${outcome.second.name})"
             }
             notify("Firmware sent to the QMX")
@@ -182,7 +245,7 @@ class FirmwareController(private val context: Context, private val scope: Corout
         val d = candidates().firstOrNull() ?: throw IOException("QMX update drive not found")
         val outcome = withDrive(d) { _, v ->
             val (fw, ee) = requireQmx(v)
-            if (ee.size != bytes.size.toLong()) throw IOException("Backup is ${bytes.size} bytes but this radio's EEPROM is ${ee.size} bytes — not restoring")
+            InstallCheck.restoreProblem(backup.name, bytes.size.toLong(), FirmwareVersion.parse(fw.name), ee.size)?.let { throw IOException("Not restoring: $it") }
             saveBackup(v.read(ee), fw.name) // safety copy of what's being replaced
             v.write("EEPROM", bytes)
         }

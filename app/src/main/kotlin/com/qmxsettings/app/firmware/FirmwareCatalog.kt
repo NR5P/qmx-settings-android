@@ -9,6 +9,11 @@ import java.util.zip.ZipInputStream
 data class FirmwareRelease(val version: String, val date: String, val notes: String, val url: String) {
     val beta get() = notes.contains("beta", ignoreCase = true)
     val stable get() = notes.startsWith("Stable", ignoreCase = true)
+    /** e.g. 1_04_000: "Use only on QMX+ it does not work on QMX". */
+    val qmxPlusOnly get() = Regex("""only on QMX\+""", RegexOption.IGNORE_CASE).containsMatchIn(notes)
+    /** e.g. 1_04_002: "Installing this firmware executes a Factory Reset". */
+    val factoryReset get() = Regex("""(executes|performs) (a )?factory reset""", RegexOption.IGNORE_CASE).containsMatchIn(notes)
+    val parsedVersion get() = FirmwareVersion.parse(version)
 }
 
 /** A firmware image ready to copy to the QMX: the .QMX file name and its bytes. */
@@ -20,8 +25,10 @@ data class FirmwareImage(val fileName: String, val data: ByteArray) {
 object FirmwareCatalog {
     const val PAGE = "https://qrp-labs.com/qmx.html"
     private const val HOST = "https://qrp-labs.com"
-    /** QMX images are 529 KiB (541696 bytes); allow some slack for future builds. */
-    val SIZE_RANGE = 256 * 1024..2 * 1024 * 1024
+    /** "QMX firmware images are always a 529K file" (assembly + operating manuals): every published image is 541696 bytes. */
+    const val IMAGE_SIZE = 541696
+    /** Every published .QMX file starts with this plain-text marker before the encrypted payload. */
+    private val MAGIC = "QRP Labs".toByteArray(Charsets.US_ASCII)
     private val NAME = Regex("""^\d+_\d{2}_\d{3}\.QMX$""", RegexOption.IGNORE_CASE)
 
     fun parse(html: String): List<FirmwareRelease> {
@@ -43,7 +50,11 @@ object FirmwareCatalog {
 
     fun fetchReleases(): List<FirmwareRelease> = parse(String(get(PAGE), Charsets.UTF_8))
 
-    fun download(r: FirmwareRelease): FirmwareImage = fromFile(r.url.substringAfterLast('/'), get(r.url))
+    fun download(r: FirmwareRelease): FirmwareImage {
+        val img = fromFile(r.url.substringAfterLast('/'), get(r.url))
+        if (img.version != r.version) throw IOException("Download for ${r.version} contained ${img.fileName} — not installing")
+        return img
+    }
 
     /** Accepts a downloaded .zip (containing one .QMX) or a bare .QMX file. */
     fun fromFile(name: String, bytes: ByteArray): FirmwareImage {
@@ -59,7 +70,8 @@ object FirmwareCatalog {
 
     fun validate(img: FirmwareImage): FirmwareImage {
         if (!NAME.matches(img.fileName)) throw IOException("\"${img.fileName}\" doesn't look like a QMX firmware file (expected e.g. 1_04_010.QMX)")
-        if (img.data.size !in SIZE_RANGE) throw IOException("${img.fileName} is ${img.data.size} bytes; QMX firmware is about 529 KB")
+        if (img.data.size != IMAGE_SIZE) throw IOException("${img.fileName} is ${img.data.size} bytes; QMX firmware images are always $IMAGE_SIZE bytes (529 KB)")
+        if (!img.data.copyOfRange(0, MAGIC.size).contentEquals(MAGIC)) throw IOException("${img.fileName} doesn't have the QRP Labs firmware header — not a QMX firmware file")
         return img.copy(fileName = img.fileName.uppercase())
     }
 
@@ -69,7 +81,10 @@ object FirmwareCatalog {
         c.setRequestProperty("User-Agent", "QMX-Settings-Android")
         try {
             if (c.responseCode != 200) throw IOException("HTTP ${c.responseCode} from ${URL(url).host}")
-            return c.inputStream.use { it.readBytes() }
+            val body = c.inputStream.use { it.readBytes() }
+            val expected = c.contentLengthLong
+            if (expected >= 0 && body.size.toLong() != expected) throw IOException("Download incomplete (${body.size} of $expected bytes)")
+            return body
         } finally { c.disconnect() }
     }
 }

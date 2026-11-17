@@ -35,6 +35,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.qmxsettings.app.firmware.FirmwareRelease
+import com.qmxsettings.app.firmware.FirmwareVersion
+import com.qmxsettings.app.firmware.InstallCheck
+import com.qmxsettings.app.firmware.InstallNote
+import androidx.compose.material3.Checkbox
 import java.io.File
 
 @Composable
@@ -81,21 +85,34 @@ fun FirmwareScreen(vm: AppViewModel) {
             fw.image?.let { Text("Selected: ${it.version}  (${it.data.size / 1024} KB)", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary) }
             fw.releasesError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
             val list = if (showAll) fw.releases else fw.releases.take(6)
-            for (r in list) ReleaseRow(r, selected = fw.image?.version == r.version, enabled = !fw.busy) { fw.download(r) }
+            for (r in list) ReleaseRow(r, selected = fw.image?.version == r.version, onPhone = fw.stored.any { it.version == r.version }, enabled = !fw.busy) { fw.download(r) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (fw.releases.size > 6) TextButton(onClick = { showAll = !showAll }) { Text(if (showAll) "Show fewer" else "All ${fw.releases.size} versions") }
                 TextButton(onClick = { fw.loadReleases() }, enabled = !fw.busy) { Text("Reload list") }
                 TextButton(onClick = { pick.launch(arrayOf("*/*")) }, enabled = !fw.busy) { Text("Use a file…") }
             }
-            Text("Firmware comes from qrp-labs.com/qmx.html. Beta versions may have more bugs; stable is the safer choice.",
+            Text("Firmware comes from qrp-labs.com/qmx.html. Beta versions may have more bugs; stable is the safer choice. The latest stable version is kept on this phone automatically so you can update without internet.",
                 style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (fw.stored.isNotEmpty()) {
+                Text("On this phone", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(top = 6.dp))
+                for (img in fw.stored) Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(img.version, fontFamily = FontFamily.Monospace, modifier = Modifier.weight(1f))
+                    if (fw.image?.fileName == img.fileName) Text("Selected", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+                    else TextButton(onClick = { fw.select(img) }, enabled = !fw.busy) { Text("Select") }
+                    TextButton(onClick = { fw.deleteStored(img) }, enabled = !fw.busy) { Text("Remove", color = MaterialTheme.colorScheme.error) }
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(fw.isQmxPlus, { fw.isQmxPlus = it })
+                Text("This radio is a QMX+ (some versions are QMX+ only)", style = MaterialTheme.typography.bodySmall)
+            }
         }
 
         // 2. Update mode
         Section("2. Put the QMX in update mode") {
-            Text("On the radio: long-press the left centre button (Menu), turn to “Update firmware”, press Select and confirm. " +
-                "The screen goes dark and the QMX appears as a USB drive. Keep the phone connected to the radio's USB port. " +
-                "(If the radio switches off instead, press the Volume button.)", style = MaterialTheme.typography.bodySmall)
+            Text("On the radio: long-press the left centre button to open the menu, turn the Tune knob to Other › Update firmware, select it and confirm. " +
+                "The screen goes dark (backlight off) and the QMX appears as a USB drive. Keep the phone connected to the radio's USB port. " +
+                "If the radio switches off instead, switch it on with the left encoder button.", style = MaterialTheme.typography.bodySmall)
             if (vm.connected && vm.mode == LinkMode.USB) Text("The CAT connection will drop when the radio restarts — that's expected.",
                 style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
             OutlinedButton(onClick = { fw.scan() }, enabled = !fw.busy) { Text("Find radio") }
@@ -130,9 +147,12 @@ fun FirmwareScreen(vm: AppViewModel) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("${f.length()} bytes", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         TextButton(onClick = { exporting = f; export.launch(f.name) }) { Text("Export") }
-                        TextButton(onClick = { restoring = f }, enabled = ready && !fw.busy) { Text("Restore…") }
+                        val problem = fw.drive?.let { d -> InstallCheck.restoreProblem(f.name, f.length(), FirmwareVersion.parse(d.firmwareFile), d.eepromSize) }
+                        TextButton(onClick = { restoring = f }, enabled = ready && problem == null && !fw.busy) { Text("Restore…") }
                         TextButton(onClick = { fw.deleteBackup(f) }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
                     }
+                    val problem = fw.drive?.let { d -> InstallCheck.restoreProblem(f.name, f.length(), FirmwareVersion.parse(d.firmwareFile), d.eepromSize) }
+                    if (ready && problem != null) Text(problem, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
                 }
             }
@@ -140,16 +160,24 @@ fun FirmwareScreen(vm: AppViewModel) {
     }
 
     if (confirmInstall) fw.image?.let { img ->
+        val notes = fw.installNotes()
+        val blocked = notes.any { it.level == InstallNote.Level.BLOCK }
         AlertDialog(onDismissRequest = { confirmInstall = false }, title = { Text("Install ${img.version}?") },
-            text = { Text("The app backs up the EEPROM, then copies ${img.fileName} to the radio (${fw.drive?.firmwareFile ?: "?"} is installed now). " +
-                "Don't unplug the radio or phone until it restarts.\n\nIf anything goes wrong, the radio can be put back in update mode and the install repeated.") },
-            confirmButton = { TextButton(onClick = { confirmInstall = false; fw.install() }) { Text("Install") } },
+            text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (n in notes) Text((if (n.level == InstallNote.Level.INFO) "• " else "⚠ ") + n.text, style = MaterialTheme.typography.bodySmall,
+                    color = when (n.level) { InstallNote.Level.BLOCK -> MaterialTheme.colorScheme.error; InstallNote.Level.WARN -> MaterialTheme.colorScheme.secondary; else -> MaterialTheme.colorScheme.onSurface })
+                Text("The app backs up the EEPROM, then copies ${img.fileName} to the radio (${fw.drive?.firmwareFile ?: "?"} is installed now). " +
+                    "Don't unplug the radio or phone until it restarts.")
+                Text("If the update fails, put the radio back in update mode and install again. If the radio won't start at all, a wire jumper from Aux 2 to ground forces update mode at power-up (assembly manual, section 2.32).",
+                    style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } },
+            confirmButton = { TextButton(enabled = !blocked, onClick = { confirmInstall = false; fw.install() }) { Text("Install") } },
             dismissButton = { TextButton(onClick = { confirmInstall = false }) { Text("Cancel") } })
     }
     restoring?.let { f ->
         AlertDialog(onDismissRequest = { restoring = null }, title = { Text("Restore EEPROM?") },
             text = { Text("Replaces ALL of the radio's configuration with ${f.name}. The current EEPROM is backed up first. " +
-                "Only restore a backup taken from this radio; a backup from a different firmware version may not match its settings layout.") },
+                "Only restore a backup taken from this radio. (The app only allows backups taken on the same firmware version.)") },
             confirmButton = { TextButton(onClick = { restoring = null; fw.restoreEeprom(f) }) { Text("Restore") } },
             dismissButton = { TextButton(onClick = { restoring = null }) { Text("Cancel") } })
     }
@@ -166,7 +194,7 @@ private fun Section(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun ReleaseRow(r: FirmwareRelease, selected: Boolean, enabled: Boolean, onDownload: () -> Unit) {
+private fun ReleaseRow(r: FirmwareRelease, selected: Boolean, onPhone: Boolean, enabled: Boolean, onDownload: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -174,11 +202,13 @@ private fun ReleaseRow(r: FirmwareRelease, selected: Boolean, enabled: Boolean, 
                 Text(r.date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (r.beta) AssistChip(onClick = {}, label = { Text("Beta") })
                 else if (r.stable) AssistChip(onClick = {}, label = { Text("Stable") })
+                if (r.qmxPlusOnly) AssistChip(onClick = {}, label = { Text("QMX+ only") })
+                if (r.factoryReset) AssistChip(onClick = {}, label = { Text("Resets settings") })
             }
             Text(r.notes.removePrefix("Consider this a Beta firmware version").removePrefix("Stable version").trim(),
                 style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
         }
         if (selected) Text("Selected", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
-        else TextButton(onClick = onDownload, enabled = enabled) { Text("Get") }
+        else TextButton(onClick = onDownload, enabled = enabled) { Text(if (onPhone) "Use" else "Get") }
     }
 }

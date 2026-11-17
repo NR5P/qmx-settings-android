@@ -216,14 +216,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val t = tree ?: return@launchWork
         progress = DiscoveryProgress("Writing ${node.name}", 0, null)
         val res = r.write(node, value, t.lists, column)
-        if (res.ok && reloadAfterEdit) r.reload()
+        if (res.ok && reloadAfterEdit && hasMu) r.reload()
         treeVersion++
         message = res.message
     }
 
     // MARK: - Two-letter CAT parameters
 
-    val params: List<CatParam> get() = CatParams.forFamily(family)
+    /** Parsed firmware version of the connected radio (null for unknown / QDX). */
+    val fwVersion get() = if (family == RadioFamily.QMX) com.qmxsettings.app.firmware.FirmwareVersion.parse(firmware) else null
+    /** CAT commands that exist on this radio's firmware. */
+    val params: List<CatParam> get() = CatParams.forRadio(family, fwVersion)
+    /** MU (config reload) exists from firmware 1_04_000; on older Menu Manager firmware edits apply immediately. */
+    private val hasMu get() = fwVersion?.let { it >= com.qmxsettings.app.firmware.FirmwareVersion.V1_04 } ?: true
 
     fun readCat() = launchWork {
         val c = cat ?: return@launchWork
@@ -362,7 +367,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 }
             }
         }
-        if (r != null && todo.any { it.entry.kind == EntryKind.MENU }) r.reload()
+        if (r != null && hasMu && todo.any { it.entry.kind == EntryKind.MENU }) r.reload()
         treeVersion++
         message = if (failed.isEmpty()) "Applied $ok change(s)" else "Applied $ok, failed ${failed.size}: ${failed.take(3).joinToString()}"
     }

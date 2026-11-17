@@ -6,6 +6,7 @@ import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
+import android.util.Log
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -40,6 +41,7 @@ class UsbMassStorage private constructor(
             val eps = (0 until intf.endpointCount).map { intf.getEndpoint(it) }.filter { it.type == UsbConstants.USB_ENDPOINT_XFER_BULK }
             val inEp = eps.firstOrNull { it.direction == UsbConstants.USB_DIR_IN } ?: throw IOException("No bulk IN endpoint")
             val outEp = eps.firstOrNull { it.direction == UsbConstants.USB_DIR_OUT } ?: throw IOException("No bulk OUT endpoint")
+            Log.i("QmxFw", "Opening ${d.deviceName} vid=%04X pid=%04X '${d.manufacturerName}' '${d.productName}' intf=${intf.id}".format(d.vendorId, d.productId))
             val conn = manager.openDevice(d) ?: throw IOException("Cannot open USB drive")
             // force = true detaches Android's own USB storage driver if it grabbed the drive.
             if (!conn.claimInterface(intf, true)) { conn.close(); throw IOException("Cannot claim USB drive (in use?)") }
@@ -65,6 +67,7 @@ class UsbMassStorage private constructor(
         val bb = ByteBuffer.wrap(cap).order(ByteOrder.BIG_ENDIAN)
         blockCount = (bb.getInt(0).toLong() and 0xFFFFFFFFL) + 1
         blockSize = bb.getInt(4)
+        Log.i("QmxFw", "Drive '$vendor' '$product': $blockCount blocks x $blockSize bytes")
     }
 
     private fun requestSense() = command(byteArrayOf(0x03, 0, 0, 0, 18, 0), 18, true)
@@ -103,6 +106,7 @@ class UsbMassStorage private constructor(
         if (n != 13) throw IOException("USB drive did not respond")
         val bb = ByteBuffer.wrap(csw).order(ByteOrder.LITTLE_ENDIAN)
         if (bb.getInt(0) != 0x53425355 || bb.getInt(4) != t) throw IOException("Bad USB drive response")
+        if (csw[12].toInt() != 0) Log.w("QmxFw", "SCSI 0x%02X failed, status %d".format(cdb[0], csw[12]))
         if (csw[12].toInt() != 0) throw IOException("Drive reported an error (SCSI 0x%02X)".format(cdb[0]))
         return data
     }

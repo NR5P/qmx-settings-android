@@ -83,7 +83,7 @@ class MenuManagerTest {
 
     @Test fun displaysRealRadioValues() {
         // Values as returned by a real QMX on firmware 1_02_005.
-        val p = com.qmxsettings.app.cat.CatParams.forFamily(com.qmxsettings.app.cat.RadioFamily.QMX).associateBy { it.code }
+        val p = com.qmxsettings.app.cat.CatParams.forRadio(com.qmxsettings.app.cat.RadioFamily.QMX, com.qmxsettings.app.firmware.FirmwareVersion.of("1_04_010")).associateBy { it.code }
         assertEquals("10 WPM", p["KS"]!!.display("010"))
         assertEquals("54 × 0.25 dB", p["AG"]!!.display("054"))
         assertEquals("7.100.500", p["FA"]!!.display("00007100500"))

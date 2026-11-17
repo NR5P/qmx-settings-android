@@ -28,7 +28,18 @@ data class CatParam(
     /** Prefix placed before the value when setting. */
     val setPrefix: String = code,
     val storedInEeprom: Boolean = false,
+    /** First firmware with this command (null = all QMX firmware). */
+    val since: String? = null,
+    /** First firmware WITHOUT this command/meaning (null = still current). */
+    val until: String? = null,
 ) {
+    fun availableOn(fw: com.qmxsettings.app.firmware.FirmwareVersion?): Boolean {
+        if (fw == null) return until == null // unknown firmware: assume current
+        if (since != null && fw < com.qmxsettings.app.firmware.FirmwareVersion.of(since)) return false
+        if (until != null && fw >= com.qmxsettings.app.firmware.FirmwareVersion.of(until)) return false
+        return true
+    }
+
     fun parseReply(frame: String): String? =
         if (frame.uppercase().startsWith(replyPrefix)) frame.substring(replyPrefix.length) else null
 
@@ -75,34 +86,38 @@ private val enDis = listOf("0" to "Disabled", "1" to "Enabled")
 object CatParams {
     private val qmx = listOf(
         CatParam("VN", "Firmware", "Radio info", ParamKind.TEXT, "Firmware version.", readOnly = true),
-        CatParam("OM", "Model code", "Radio info", ParamKind.TEXT, "Model number (QMX reports QC).", readOnly = true),
-        CatParam("UI", "Unique ID", "Radio info", ParamKind.TEXT, "96-bit unique ID of the STM32 processor.", readOnly = true),
+        CatParam("OM", "Model code", "Radio info", ParamKind.TEXT, "Model number (QMX reports QC).", readOnly = true, since = "1_02_002"),
+        CatParam("UI", "Unique ID", "Radio info", ParamKind.TEXT, "96-bit unique ID of the STM32 processor.", readOnly = true, since = "1_04_003"),
         CatParam("ID", "Kenwood ID", "Radio info", ParamKind.TEXT, "Always 020 (TS-480 emulation).", readOnly = true),
 
         CatParam("FA", "VFO A", "Operating", ParamKind.FREQ, "VFO A frequency in Hz.", min = 100_000, max = 99_999_999, unit = "Hz"),
         CatParam("FB", "VFO B", "Operating", ParamKind.FREQ, "VFO B frequency in Hz.", min = 100_000, max = 99_999_999, unit = "Hz"),
         CatParam("MD", "Mode", "Operating", ParamKind.LIST, "Operating mode. (SWR puts the radio into SWR tune mode, so it's not offered here.)",
-            options = listOf("1" to "LSB", "2" to "USB", "3" to "CW", "5" to "AM", "6" to "Digi (FSK)", "7" to "CW-R", "9" to "FSK-R")),
-        CatParam("BN", "Band number", "Operating", ParamKind.NUMBER, "Band column number from Band config (0-based).", min = 0, max = 15),
+            options = listOf("1" to "LSB", "2" to "USB", "3" to "CW", "5" to "AM (firmware 1_04_001+)", "6" to "Digi (FSK)", "7" to "CW-R", "9" to "FSK-R")),
+        CatParam("BN", "Band number", "Operating", ParamKind.NUMBER, "Band column number from Band config (0-based).", min = 0, max = 15, since = "1_04_003"),
         CatParam("FR", "VFO mode", "Operating", ParamKind.LIST, "Which VFO is in use.",
             options = listOf("0" to "VFO A", "1" to "VFO B", "2" to "Split")),
         CatParam("SP", "Split", "Operating", ParamKind.LIST, "Split operation.", options = onOff),
         CatParam("TR", "Tune rate", "Operating", ParamKind.LIST, "Frequency step per click of the Tune knob.",
-            options = listOf("0" to "10 MHz", "1" to "1 MHz", "2" to "100 kHz", "3" to "10 kHz", "4" to "1 kHz", "5" to "500 Hz", "6" to "100 Hz", "7" to "10 Hz")),
+            options = listOf("0" to "10 MHz", "1" to "1 MHz", "2" to "100 kHz", "3" to "10 kHz", "4" to "1 kHz", "5" to "500 Hz", "6" to "100 Hz", "7" to "10 Hz"), since = "1_04_001"),
         CatParam("RT", "RIT", "Operating", ParamKind.LIST, "RIT on/off.", options = onOff),
         CatParam("RR", "RIT rate", "Operating", ParamKind.LIST, "RIT step per click.",
-            options = listOf("4" to "1 kHz", "5" to "500 Hz", "6" to "100 Hz", "7" to "10 Hz", "8" to "1 Hz")),
+            options = listOf("4" to "1 kHz", "5" to "500 Hz", "6" to "100 Hz", "7" to "10 Hz", "8" to "1 Hz"), since = "1_04_001"),
 
         CatParam("AG", "AF gain (volume)", "Audio & RF", ParamKind.NUMBER,
             "Audio gain in 0.25 dB steps (e.g. 91 = 22.75 dB). Range 0-799 but high values are far too loud.",
-            min = 0, max = 799, unit = "× 0.25 dB", getCmd = "AG0;", replyPrefix = "AG0", setPrefix = "AG0"),
-        CatParam("RG", "RF gain (current band)", "Audio & RF", ParamKind.NUMBER, "Receive RF gain in dB for the active band.", min = 0, max = 99, unit = "dB"),
+            min = 0, max = 799, unit = "× 0.25 dB", getCmd = "AG0;", replyPrefix = "AG0", setPrefix = "AG0", since = "1_02_006"),
+        // Before 1_02_006 the AG command was the receive "Audio gain" (now called RF gain), in dB.
+        CatParam("AG", "RF gain (current band)", "Audio & RF", ParamKind.NUMBER,
+            "Receive gain in dB for the active band (called Audio gain on this firmware; AG became volume in 1_02_006).",
+            min = 0, max = 99, unit = "dB", getCmd = "AG0;", replyPrefix = "AG0", setPrefix = "AG0", until = "1_02_006"),
+        CatParam("RG", "RF gain (current band)", "Audio & RF", ParamKind.NUMBER, "Receive RF gain in dB for the active band.", min = 0, max = 99, unit = "dB", since = "1_02_006"),
         CatParam("SS", "SSB TX source", "Audio & RF", ParamKind.LIST, "Where SSB transmit audio comes from.",
             options = listOf("0" to "USB audio", "1" to "Two-tone test", "2" to "External mic")),
         CatParam("KS", "Keyer speed", "CW", ParamKind.NUMBER, "Keyer speed in WPM.", min = 5, max = 60, unit = "WPM"),
 
         CatParam("AI", "Auto Info", "CAT", ParamKind.LIST, "Unsolicited IF; reports to the CAT host.",
-            options = listOf("0" to "Off", "1" to "Old format (IF every 1.5 s)", "2" to "Extended (on change)", "3" to "Both")),
+            options = listOf("0" to "Off", "1" to "Old format (IF every 1.5 s)", "2" to "Extended (on change)", "3" to "Both"), since = "1_04_001"),
         CatParam("QB", "CAT timeout enable", "CAT", ParamKind.LIST, "Return to RX if no CAT command arrives while transmitting.", options = enDis),
         CatParam("QC", "CAT timeout", "CAT", ParamKind.NUMBER, "CAT timeout in seconds.", min = 1, max = 999, unit = "s"),
 
@@ -140,4 +155,8 @@ object CatParams {
     )
 
     fun forFamily(f: RadioFamily) = if (f == RadioFamily.QDX) qdx else qmx
+
+    /** Commands that exist on this radio's firmware (QMX firmware only; QDX list is unfiltered). */
+    fun forRadio(f: RadioFamily, fw: com.qmxsettings.app.firmware.FirmwareVersion?) =
+        if (f == RadioFamily.QDX) qdx else qmx.filter { it.availableOn(fw) }
 }

@@ -81,7 +81,9 @@ class RealRadioTest {
             val failed = tree.all().filter { it.hasValue && it.readError }.map { it.key }.toList()
             log("Read errors (${failed.size}): $failed")
             val catVals = JSONObject()
-            for (p in CatParams.forFamily(RadioFamily.QMX)) {
+            val fwv = com.qmxsettings.app.firmware.FirmwareVersion.parse(vn)
+            log("Firmware-filtered params: ${CatParams.forRadio(RadioFamily.QMX, fwv).size} of ${CatParams.forFamily(RadioFamily.QMX).size}")
+            for (p in CatParams.forRadio(RadioFamily.QMX, fwv)) {
                 val r = cat.query(p.getCmd, p.replyPrefix)
                 val v = (r as? CatReply.Ok)?.let { p.parseReply(it.frame) }
                 catVals.put(p.code, v ?: JSONObject.NULL)
@@ -109,12 +111,12 @@ class RealRadioTest {
         val cat = CatClient(t)
         t.open()
         val logJob = launchLog(cat, File(outDir, "traffic-write.log"))
-        val params = CatParams.forFamily(RadioFamily.QMX).associateBy { it.code }
+        val params = CatParams.forRadio(RadioFamily.QMX, com.qmxsettings.app.firmware.FirmwareVersion.parse(JSONObject(backup.readText()).optString("firmware"))).associateBy { it.code }
         suspend fun get(code: String): String? { val p = params[code]!!; return (cat.query(p.getCmd, p.replyPrefix) as? CatReply.Ok)?.let { p.parseReply(it.frame) } }
         suspend fun set(code: String, v: String): CatReply = cat.command(params[code]!!.setCommand(v))
         val failures = mutableListOf<String>()
         try {
-            for ((code, newVal) in listOf("KS" to "12", "AG" to "60", "FA" to "7101000", "MD" to "3")) {
+            for ((code, newVal) in listOf("KS" to "12", "FA" to "7101000", "MD" to "3")) {
                 val before = get(code)
                 val r = set(code, newVal)
                 val after = get(code)
