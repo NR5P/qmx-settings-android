@@ -112,7 +112,7 @@ fun App(vm: AppViewModel) {
                     Tab.MENU -> MenuScreen(vm)
                     Tab.CONTROLS -> ControlsScreen(vm)
                     Tab.PROFILES -> ProfilesScreen(vm)
-                    Tab.FIRMWARE -> FirmwareScreen(vm)
+                    Tab.FIRMWARE -> FirmwareScreen(vm) { tab = it }
                     Tab.CONSOLE -> ConsoleScreen(vm)
                 }
             }
@@ -125,7 +125,7 @@ private fun statusLine(vm: AppViewModel): String = when (val c = vm.conn) {
     ConnState.Connecting -> "Connecting…"
     is ConnState.Failed -> "Error: ${c.message}"
     ConnState.Connected -> buildString {
-        append(if (vm.mode == LinkMode.DEMO) "DEMO (simulated QMX)" else vm.family.label)
+        append(if (vm.mode == LinkMode.DEMO) "DEMO (simulated QMX)" else vm.myRadio.model.label)
         vm.firmware?.let { append(" · fw $it") }
         if (vm.menuManager) append(" · Menu Manager")
     }
@@ -148,7 +148,11 @@ fun RadioScreen(vm: AppViewModel, go: (Tab) -> Unit) {
                                 OutlinedButton(onClick = { vm.loadMenu() }, enabled = !vm.busy) { Text("Re-read all") }
                             }
                         } else {
-                            Text("This radio didn't answer Menu Manager (MM) queries. Configuration items available over CAT are on the Controls tab. QMX needs firmware 1_02_006 or newer for full menu access.")
+                            Text(when (vm.family) {
+                                com.qmxsettings.app.cat.RadioFamily.QMX -> "This radio didn't answer Menu Manager (MM) queries. QMX/QMX+ need firmware 1_02_006 or newer for full menu access; until then, the CAT settings are on the Controls tab."
+                                com.qmxsettings.app.cat.RadioFamily.QDX -> "QDX has no Menu Manager. Its CAT-adjustable configuration (Q-commands for this firmware version) is on the Controls tab; everything else is in the QDX Terminal."
+                                com.qmxsettings.app.cat.RadioFamily.QCX -> "QCX-family radios offer a small set of CAT commands, on the Controls tab."
+                            })
                             Button(onClick = { go(Tab.CONTROLS) }) { Text("Open controls") }
                         }
                     }
@@ -161,9 +165,9 @@ fun RadioScreen(vm: AppViewModel, go: (Tab) -> Unit) {
             Text(it.message, color = MaterialTheme.colorScheme.error)
         }
 
-        Text("USB", style = MaterialTheme.typography.titleMedium)
-        Text("Plug the radio into the phone's USB-C port (OTG). Nothing is sent to the radio until you tap Connect. Only one app at a time can use the radio's USB port.",
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Connect", style = MaterialTheme.typography.titleMedium)
+        Text("Nothing is sent to the radio until you tap Connect.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Guide(com.qmxsettings.app.radio.Guides.connect(vm.myRadio.model))
         if (vm.ports.isEmpty()) {
             Text("No USB serial radios found.", style = MaterialTheme.typography.bodyMedium)
         }
@@ -183,12 +187,7 @@ fun RadioScreen(vm: AppViewModel, go: (Tab) -> Unit) {
         OutlinedButton(onClick = { vm.refreshPorts() }) { Text("Rescan USB") }
 
         Spacer(Modifier.height(8.dp))
-        Text("Radio type", style = MaterialTheme.typography.titleMedium)
-        Text("Detected automatically from the firmware version; override here if detection fails.",
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (f in RadioFamily.entries) FilterChip(selected = vm.family == f, onClick = { vm.family = f }, label = { Text(f.label) })
-        }
+        MyRadioCard(vm)
 
         Spacer(Modifier.height(8.dp))
         Text("Demo", style = MaterialTheme.typography.titleMedium)
@@ -206,5 +205,45 @@ fun RadioScreen(vm: AppViewModel, go: (Tab) -> Unit) {
             Switch(checked = vm.reloadAfterEdit, onCheckedChange = { vm.reloadAfterEdit = it })
         }
         if (vm.busy) CircularProgressIndicator(Modifier.size(24.dp))
+    }
+}
+
+
+/** Model / PCB revision / band version picker. Detection fills in what it can; the rest is the user's choice. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun MyRadioCard(vm: AppViewModel) {
+    val r = vm.myRadio
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("My radio", style = MaterialTheme.typography.titleMedium)
+            Text("Used for the right commands, firmware and instructions. The app detects the family (QMX, QDX or QCX) when it connects " +
+                "and the QMX band version from its menu; the exact model and PCB revision can't be read over USB, so pick them here.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            vm.detectedFamily?.let { f ->
+                Text("Detected: ${f.label}" + (vm.firmware?.let { " · firmware $it" } ?: ""), color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelMedium)
+            }
+            Text("Model", style = MaterialTheme.typography.labelLarge)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                for (m in com.qmxsettings.app.radio.RadioModel.entries) {
+                    val wrongFamily = vm.detectedFamily != null && m.family != vm.detectedFamily
+                    FilterChip(selected = r.model == m, enabled = !wrongFamily, onClick = { vm.updateMyRadio(r.copy(model = m)) }, label = { Text(m.label) })
+                }
+            }
+            if (r.model.pcbRevs.isNotEmpty()) {
+                Text("PCB revision (printed on the board)", style = MaterialTheme.typography.labelLarge)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for (rev in r.model.pcbRevs) FilterChip(selected = r.pcbRev == rev, onClick = { vm.updateMyRadio(r.copy(pcbRev = if (r.pcbRev == rev) null else rev)) }, label = { Text("Rev $rev") })
+                }
+            }
+            if (r.model.bandVersions.size > 1) {
+                Text("Band version", style = MaterialTheme.typography.labelLarge)
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    for (b in r.model.bandVersions) FilterChip(selected = r.bandVersion == b, onClick = { vm.updateMyRadio(r.copy(bandVersion = b)) }, label = { Text(b) })
+                }
+            } else r.model.bandVersions.firstOrNull()?.let { Text("Band version: $it", style = MaterialTheme.typography.bodySmall) }
+            Guide(com.qmxsettings.app.radio.Guides.revision(r.model, r.pcbRev))
+        }
     }
 }

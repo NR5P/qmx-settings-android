@@ -70,8 +70,32 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         out
     }
 
-    /** Firmware update and EEPROM backup via the QMX bootloader drive. */
-    val fw = com.qmxsettings.app.firmware.FirmwareController(app, viewModelScope) { message = it }
+    private val prefs = app.getSharedPreferences("radio", android.content.Context.MODE_PRIVATE)
+
+    /** What the user told us about their radio (model, PCB rev, band version); saved on the phone. */
+    var myRadio by mutableStateOf(loadMyRadio()); private set
+    /** Radio family detected from the connected radio's replies (null = not connected / unknown). */
+    var detectedFamily by mutableStateOf<RadioFamily?>(null); private set
+
+    private fun loadMyRadio(): com.qmxsettings.app.radio.MyRadio {
+        val m = prefs.getString("model", null)?.let { n -> com.qmxsettings.app.radio.RadioModel.entries.firstOrNull { it.name == n } }
+            ?: com.qmxsettings.app.radio.RadioModel.QMX
+        return com.qmxsettings.app.radio.MyRadio(m, prefs.getString("rev", null), prefs.getString("band", null))
+    }
+
+    fun updateMyRadio(r: com.qmxsettings.app.radio.MyRadio) {
+        val clean = r.copy(
+            pcbRev = r.pcbRev?.takeIf { it in r.model.pcbRevs },
+            bandVersion = r.bandVersion?.takeIf { it in r.model.bandVersions } ?: r.model.bandVersions.singleOrNull(),
+        )
+        myRadio = clean
+        prefs.edit().putString("model", clean.model.name).putString("rev", clean.pcbRev).putString("band", clean.bandVersion).apply()
+        if (!connected) family = clean.model.family
+        fw.onRadioChanged()
+    }
+
+    /** Firmware update and EEPROM backup via the radio's QFU bootloader drive. */
+    val fw = com.qmxsettings.app.firmware.FirmwareController(app, viewModelScope, { myRadio }) { message = it }
 
     private val store = ProfileStore(File(app.filesDir, "profiles"))
 
@@ -79,6 +103,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var conn by mutableStateOf<ConnState>(ConnState.Disconnected); private set
     var ports by mutableStateOf<List<UsbPortInfo>>(emptyList()); private set
     var family by mutableStateOf(RadioFamily.QMX)
+
     var firmware by mutableStateOf<String?>(null); private set
     var menuManager by mutableStateOf(false); private set
     var tree by mutableStateOf<MenuTree?>(null); private set
@@ -101,6 +126,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var work: Job? = null
 
     init {
+        family = myRadio.model.family
         profiles += store.all()
         refreshPorts()
     }
@@ -117,7 +143,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun connectDemo() = connect(LinkMode.DEMO, DemoRadio(demoJson))
 
     /** Opens the USB port. Only ever called from an explicit Connect tap. */
-    fun connectUsb(port: UsbPortInfo) = connect(LinkMode.USB, UsbSerialTransport(getApplication(), port.id))
+    fun connectUsb(port: UsbPortInfo) = connect(LinkMode.USB, UsbSerialTransport(getApplication(), port.id, myRadio.model.baud))
 
     private fun connect(m: LinkMode, t: ByteTransport) {
         disconnect()
@@ -167,6 +193,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         conn = ConnState.Disconnected
         firmware = null
         menuManager = false
+        detectedFamily = null
         tree = null
         progress = null
         catValues.clear()
@@ -178,12 +205,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         progress = DiscoveryProgress("Identifying radio", 0, null)
         val vn = (c.query("VN;") as? CatReply.Ok)?.frame?.removePrefix("VN")
         firmware = vn
-        menuManager = repo?.supportsMenuManager() == true
-        family = when {
-            vn?.contains("QDX", ignoreCase = true) == true -> RadioFamily.QDX
-            vn?.contains("QMX", ignoreCase = true) == true || menuManager -> RadioFamily.QMX
-            else -> family
+        // QMX/QMX+ answer VN1_04_010QMX; QDX answers VN1_12; (no suffix); QCX has no VN command but answers ID020;.
+        detectedFamily = when {
+            vn?.contains("QMX", ignoreCase = true) == true -> RadioFamily.QMX
+            vn?.contains("QDX", ignoreCase = true) == true || (vn != null && Regex("""^\d+_\d{2}[a-z]?$""").matches(vn)) -> RadioFamily.QDX
+            vn == null && (c.query("ID;") as? CatReply.Ok)?.frame == "ID020" -> RadioFamily.QCX
+            else -> null
         }
+        family = detectedFamily ?: myRadio.model.family
+        if (detectedFamily != null && myRadio.model.family != detectedFamily) {
+            // The radio says it's a different family than My radio: switch so firmware rules and commands are right.
+            val m = com.qmxsettings.app.radio.RadioModel.forFamily(detectedFamily!!).first()
+            updateMyRadio(com.qmxsettings.app.radio.MyRadio(m))
+            message = "Detected a ${detectedFamily!!.label} radio — check My radio on the Radio tab"
+        }
+        menuManager = family == RadioFamily.QMX && repo?.supportsMenuManager() == true
         progress = null
         if (menuManager) loadMenu() else readCat()
     }
@@ -204,6 +240,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         r.readAll(t.roots) { progress = it }
         treeVersion++
         message = "Read ${t.settingCount()} settings"
+        // QMX reports its band version (System config › Band version, read-only); use it to fill in My radio.
+        t.all().firstOrNull { it.name.equals("Band version", true) }?.value?.trim()?.let { bv ->
+            val m = myRadio.model
+            val match = com.qmxsettings.app.radio.RadioModel.forFamily(RadioFamily.QMX).firstOrNull { mm -> mm.bandVersions.any { it.equals(bv, true) } }
+            if (match != null && (myRadio.bandVersion == null || m != match))
+                updateMyRadio(myRadio.copy(model = match, bandVersion = match.bandVersions.first { it.equals(bv, true) }))
+        }
     }
 
     fun refresh(node: MenuNode) = launchWork {

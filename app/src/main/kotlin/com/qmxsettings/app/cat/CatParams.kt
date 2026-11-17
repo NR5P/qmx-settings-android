@@ -2,7 +2,8 @@ package com.qmxsettings.app.cat
 
 enum class RadioFamily(val label: String) {
     QMX("QMX / QMX+"),
-    QDX("QDX"),
+    QDX("QDX / QDX-M"),
+    QCX("QCX / QCX+ / QCX-mini"),
 }
 
 enum class ParamKind { NUMBER, LIST, TEXT, FREQ }
@@ -134,29 +135,64 @@ object CatParams {
         CatParam("QJ", "TX shift threshold", "Session (Q-commands)", ParamKind.NUMBER, "See the Digi config section of the manual.", min = 0, max = 9999),
     )
 
+    // QDX: Q-command numbering from the QDX operating manuals. Up to 1_05, Q3 was receiver gain and
+    // everything after it was one letter later; 1_06 removed it and added QB-QJ. AG was gain/256
+    // before 1_04 and dB (current band) from 1_04.
     private val qdx = listOf(
+        CatParam("VN", "Firmware", "Radio info", ParamKind.TEXT, "Firmware version.", readOnly = true),
+        CatParam("ID", "Kenwood ID", "Radio info", ParamKind.TEXT, "Always 020 (TS-480 emulation).", readOnly = true),
         CatParam("FA", "VFO A", "Operating", ParamKind.FREQ, "VFO A frequency in Hz.", min = 100_000, max = 99_999_999, unit = "Hz"),
         CatParam("FB", "VFO B", "Operating", ParamKind.FREQ, "VFO B frequency in Hz.", min = 100_000, max = 99_999_999, unit = "Hz"),
+        CatParam("MD", "Mode", "Operating", ParamKind.LIST, "Sideband (QDX before 1_08 reported 3 here).", options = listOf("1" to "LSB", "2" to "USB", "3" to "CW (old firmware report)"), since = "1_01"),
         CatParam("FR", "VFO mode", "Operating", ParamKind.LIST, "Which VFO is in use.", options = listOf("0" to "VFO A", "1" to "VFO B", "2" to "Split")),
         CatParam("SP", "Split", "Operating", ParamKind.LIST, "Split operation.", options = onOff),
-        CatParam("AG", "AF gain", "Audio & RF", ParamKind.NUMBER, "Audio gain ÷ 256 (default 5000 → 19).", min = 0, max = 255),
-        CatParam("Q0", "TCXO reference", "Configuration (Q-commands)", ParamKind.NUMBER, "24999000-25001000 Hz.", min = 24_999_000, max = 25_001_000, unit = "Hz"),
-        CatParam("Q1", "Sideband", "Configuration (Q-commands)", ParamKind.LIST, "Sideband.", options = listOf("0" to "USB", "1" to "LSB")),
-        CatParam("Q2", "Default frequency", "Configuration (Q-commands)", ParamKind.NUMBER, "Start-up frequency. Saved in EEPROM.", min = 100_000, max = 99_999_999, unit = "Hz", storedInEeprom = true),
-        CatParam("Q3", "Receiver gain", "Configuration (Q-commands)", ParamKind.NUMBER, "Default 5000.", min = 0, max = 65535),
-        CatParam("Q4", "VOX", "Configuration (Q-commands)", ParamKind.LIST, "VOX enable.", options = enDis),
-        CatParam("Q5", "TX rise threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "Percent, default 80.", min = 0, max = 99, unit = "%"),
-        CatParam("Q6", "TX fall threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "Percent, default 60.", min = 0, max = 99, unit = "%"),
-        CatParam("Q7", "Cycle min", "Configuration (Q-commands)", ParamKind.NUMBER, "Cycle Min.", min = 0, max = 999),
-        CatParam("Q8", "Sample min", "Configuration (Q-commands)", ParamKind.NUMBER, "Sample Min.", min = 0, max = 999),
-        CatParam("Q9", "Discard", "Configuration (Q-commands)", ParamKind.NUMBER, "Discard.", min = 0, max = 999),
-        CatParam("QA", "IQ mode", "Configuration (Q-commands)", ParamKind.LIST, "Stream raw I/Q to USB audio.", options = enDis),
-        CatParam("QB", "Japan band limits", "Configuration (Q-commands)", ParamKind.LIST, "Japanese band limits.", options = enDis),
+        CatParam("AG", "Audio gain", "Audio", ParamKind.NUMBER, "Audio gain divided by 256 (default 5000 → 19).", min = 0, max = 255, until = "1_04"),
+        CatParam("AG", "Audio gain (current band)", "Audio", ParamKind.NUMBER, "Audio gain in dB for the active band.", min = 0, max = 99, unit = "dB", since = "1_04"),
+        CatParam("Q0", "TCXO reference", "Configuration (Q-commands)", ParamKind.NUMBER, "24999000-25001000 Hz.", min = 24_999_000, max = 25_001_000, unit = "Hz", since = "1_01"),
+        CatParam("Q1", "Sideband", "Configuration (Q-commands)", ParamKind.LIST, "Sideband.", options = listOf("0" to "USB", "1" to "LSB"), since = "1_01"),
+        CatParam("Q2", "Default frequency", "Configuration (Q-commands)", ParamKind.NUMBER, "Start-up frequency. Saved in EEPROM.", min = 100_000, max = 99_999_999, unit = "Hz", storedInEeprom = true, since = "1_01"),
+        // 1_01 – 1_05 numbering
+        CatParam("Q3", "Receiver gain", "Configuration (Q-commands)", ParamKind.NUMBER, "Default 5000.", min = 0, max = 65535, since = "1_01", until = "1_06"),
+        CatParam("Q4", "VOX", "Configuration (Q-commands)", ParamKind.LIST, "VOX enable.", options = enDis, since = "1_01", until = "1_06"),
+        CatParam("Q5", "TX rise threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "Percent, default 80.", min = 0, max = 99, unit = "%", since = "1_01", until = "1_06"),
+        CatParam("Q6", "TX fall threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "Percent, default 60.", min = 0, max = 99, unit = "%", since = "1_01", until = "1_06"),
+        CatParam("Q7", "Cycle min", "Configuration (Q-commands)", ParamKind.NUMBER, "Cycle Min.", min = 0, max = 999, since = "1_01", until = "1_06"),
+        CatParam("Q8", "Sample min", "Configuration (Q-commands)", ParamKind.NUMBER, "Sample Min.", min = 0, max = 999, since = "1_01", until = "1_06"),
+        CatParam("Q9", "Discard", "Configuration (Q-commands)", ParamKind.NUMBER, "Discard.", min = 0, max = 999, since = "1_01", until = "1_06"),
+        CatParam("QA", "IQ mode", "Configuration (Q-commands)", ParamKind.LIST, "Stream raw I/Q to USB audio.", options = enDis, since = "1_01", until = "1_06"),
+        CatParam("QB", "Japan band limits", "Configuration (Q-commands)", ParamKind.LIST, "Japanese band limits.", options = enDis, since = "1_01", until = "1_06"),
+        // 1_06+ numbering
+        CatParam("Q3", "VOX", "Configuration (Q-commands)", ParamKind.LIST, "VOX enable.", options = enDis, since = "1_06"),
+        CatParam("Q4", "TX rise threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "Percent, default 80.", min = 0, max = 99, unit = "%", since = "1_06"),
+        CatParam("Q5", "TX fall threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "Percent, default 60.", min = 0, max = 99, unit = "%", since = "1_06"),
+        CatParam("Q6", "Cycle min", "Configuration (Q-commands)", ParamKind.NUMBER, "Cycle Min.", min = 0, max = 999, since = "1_06"),
+        CatParam("Q7", "Sample min", "Configuration (Q-commands)", ParamKind.NUMBER, "Sample Min.", min = 0, max = 999, since = "1_06"),
+        CatParam("Q8", "Discard", "Configuration (Q-commands)", ParamKind.NUMBER, "Discard.", min = 0, max = 999, since = "1_06"),
+        CatParam("Q9", "IQ mode", "Configuration (Q-commands)", ParamKind.LIST, "Stream raw I/Q to USB audio.", options = enDis, since = "1_06"),
+        CatParam("QA", "Japan band limits", "Configuration (Q-commands)", ParamKind.LIST, "Japanese band limits.", options = enDis, since = "1_06"),
+        CatParam("QB", "CAT timeout enable", "CAT", ParamKind.LIST, "Return to RX if no CAT command arrives while transmitting.", options = enDis, since = "1_06"),
+        CatParam("QC", "CAT timeout", "CAT", ParamKind.NUMBER, "CAT timeout in seconds.", min = 1, max = 999, unit = "s", since = "1_06"),
+        CatParam("QD", "PTT port as Serial 3", "Configuration (Q-commands)", ParamKind.LIST, "Needs a hardware modification.", options = enDis, since = "1_06"),
+        CatParam("QI", "Night mode", "Configuration (Q-commands)", ParamKind.LIST, "Very dim status LED.", options = enDis, since = "1_06"),
+        CatParam("QJ", "TX shift threshold", "Configuration (Q-commands)", ParamKind.NUMBER, "When the TX frequency is updated (mHz).", min = 0, max = 9999, since = "1_06"),
     )
 
-    fun forFamily(f: RadioFamily) = if (f == RadioFamily.QDX) qdx else qmx
+    // QCX / QCX+ / QCX-mini (operating manual 1.08): a small TS-480 subset at 38400 baud. There is no
+    // version command. Writes to read-only items are ignored by the radio.
+    private val qcx = listOf(
+        CatParam("ID", "Kenwood ID", "Radio info", ParamKind.TEXT, "Always 020 (TS-480 emulation).", readOnly = true),
+        CatParam("OM", "Model code", "Radio info", ParamKind.TEXT, "QC on QCX+ (same code as QMX).", readOnly = true),
+        CatParam("FA", "VFO A", "Operating", ParamKind.FREQ, "VFO A frequency in Hz. The radio doesn't check the value, so keep it in band.", min = 100_000, max = 30_000_000, unit = "Hz"),
+        CatParam("FB", "VFO B", "Operating", ParamKind.FREQ, "VFO B frequency in Hz.", min = 100_000, max = 30_000_000, unit = "Hz"),
+        CatParam("FR", "VFO mode", "Operating", ParamKind.LIST, "Sets VFO A, B or Split (reads back which VFO receives).", options = listOf("0" to "VFO A", "1" to "VFO B", "2" to "Split")),
+        CatParam("KS", "Keyer speed", "CW", ParamKind.NUMBER, "Keyer speed in WPM.", min = 5, max = 60, unit = "WPM"),
+        CatParam("RT", "RIT", "Operating", ParamKind.LIST, "RIT status.", options = onOff, readOnly = true),
+        CatParam("SM", "S-meter", "Operating", ParamKind.NUMBER, "Signal strength 0-16383.", readOnly = true),
+        CatParam("MD", "Mode", "Operating", ParamKind.TEXT, "Always CW.", readOnly = true),
+    )
 
-    /** Commands that exist on this radio's firmware (QMX firmware only; QDX list is unfiltered). */
-    fun forRadio(f: RadioFamily, fw: com.qmxsettings.app.firmware.FirmwareVersion?) =
-        if (f == RadioFamily.QDX) qdx else qmx.filter { it.availableOn(fw) }
+    fun forFamily(f: RadioFamily) = when (f) { RadioFamily.QMX -> qmx; RadioFamily.QDX -> qdx; RadioFamily.QCX -> qcx }
+
+    /** Commands that exist on this radio's firmware version (unknown version = newest firmware). */
+    fun forRadio(f: RadioFamily, fw: com.qmxsettings.app.firmware.FirmwareVersion?) = forFamily(f).filter { it.availableOn(fw) }
 }

@@ -1,13 +1,16 @@
 package com.qmxsettings.app.firmware
 
-/** A QMX firmware version such as 1_04_010 (from "VN1_04_010QMX;", "1_04_010.QMX" or "1_04_008a"). */
+/**
+ * A QRP Labs firmware version: QMX style 1_04_010 (from "VN1_04_010QMX;", "1_04_010.QMX", "1_04_008a")
+ * or QDX style 1_12 / 1_08a / 1_00_003 (from "VN1_12;", "1_12.QDX"). Only compare versions of the same family.
+ */
 data class FirmwareVersion(val major: Int, val minor: Int, val build: Int) : Comparable<FirmwareVersion> {
     override fun compareTo(other: FirmwareVersion) = compareValuesBy(this, other, { it.major }, { it.minor }, { it.build })
     override fun toString() = "%d_%02d_%03d".format(major, minor, build)
 
     companion object {
-        private val RX = Regex("""(\d+)_(\d{2})_(\d{3})""")
-        fun parse(s: String?): FirmwareVersion? = s?.let { RX.find(it) }?.destructured?.let { (a, b, c) -> FirmwareVersion(a.toInt(), b.toInt(), c.toInt()) }
+        private val RX = Regex("""(\d+)_(\d{2})(?:_(\d{3}))?""")
+        fun parse(s: String?): FirmwareVersion? = s?.let { RX.find(it) }?.destructured?.let { (a, b, c) -> FirmwareVersion(a.toInt(), b.toInt(), c.ifEmpty { "0" }.toInt()) }
         fun of(s: String) = parse(s)!!
 
         // Milestones from the QRP Labs QMX firmware history (qrp-labs.com/qmx.html) and CAT manual.
